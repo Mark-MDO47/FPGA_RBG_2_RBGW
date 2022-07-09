@@ -7,7 +7,7 @@ The idea is to use an iCE40 FPGA to input the serial lines of an ESP32 talking t
 
 I have friends with SK6812 RGBW installed on the outside of their house, but the controller does not do patterns as exciting as the FastLED library can produce. For instance, see https://github.com/FastLED/FastLED/blob/master/examples/DemoReel100/DemoReel100.ino
 
-I found the code for the ESP32 that generates the bit stream and it looks like I could hack it up to do the job, but somehow that didn't interest me as much as I thought it would. Even if I did that, it wouldn't help with other FastLED controllers besides the ESP32. However, it was interesting to see some details about the ESP32 "RMT" device.
+I found the code for the ESP32 that generates the bit stream and it looks like I could hack it up to do the job, but somehow that didn't interest me as much as I thought it would. Even if I did that, it wouldn't help with other FastLED controllers besides the ESP32. It did have the advantage of getting me to see some details about the ESP32 "RMT" device; this is a fascinating capability!
 
 Placing an FPGA inline to do the conversion allows me to learn about Verilog, FPGAs, apio, and a host of new material. This did seem interesting!
 * https://www.youtube.com/watch?v=lLg1AgA2Xoo&t=3s "Introduction to FPGA Part 1 - What is an FPGA? | Digi-Key Electronics"
