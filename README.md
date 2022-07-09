@@ -21,6 +21,7 @@ My first attempt will operate just slightly inside that fastest spec RBGW rate a
 I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long.
 
 If I can get any delivered, I will use the iCEstick evaluation board to house the FPGA part of the project; I am certainly not able to solder a ball-grid-array FPGA myself.
+* https://www.latticesemi.com/products/developmentboardsandkits/icestick
 
 Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciFi Rubber Band Gun (RBG) that uses WS2812b LEDs:
 * https://github.com/Mark-MDO47/RubberBandGun
