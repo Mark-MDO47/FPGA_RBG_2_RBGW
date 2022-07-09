@@ -1,0 +1,2 @@
+# FPGA_RBG_2_RBGW
+Lattice iCE40 FPGA convert WS2812b RBG from ESP32 to SK6812 RGBW
