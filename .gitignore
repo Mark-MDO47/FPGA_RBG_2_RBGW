@@ -50,3 +50,15 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+
+#Verilog - mdo
+*.bin
+*.asc
+*.json
+*.out
+*.dblite
+*.history
+*_tb.vcd
+ignore_*
