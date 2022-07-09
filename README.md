@@ -11,6 +11,7 @@ I found the code for the ESP32 that generates the bit stream and it looks like I
 
 Placing an FPGA inline to do the conversion allows me to learn about Verilog, FPGAs, apio, and a host of new material. This did seem interesting!
 * https://www.youtube.com/watch?v=lLg1AgA2Xoo&t=3s "Introduction to FPGA Part 1 - What is an FPGA? | Digi-Key Electronics"
+* https://verilogguide.readthedocs.io/en/latest/index.html - similar to above but readable, not video 
 
 However, reading the specs of the two LED controllers I discovered that if the bitrate for the WS2812b is at the spec maximum then it will overflow the spec maximum bitrate of the SK6812 (because we need to transmit 4 bytes RGBW for every three bytes RGB we receive).
 
