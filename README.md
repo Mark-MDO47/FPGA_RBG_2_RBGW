@@ -5,6 +5,8 @@ The idea is to use an iCE40 FPGA to input the serial lines of an ESP32 talking t
 * https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
 * https://cdn-shop.adafruit.com/product-files/2757/p2757_SK6812RGBW_REV01.pdf
 
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_649x351.jpg "Concept for FPGA_RBT_2_RBGW")
+
 I have friends with SK6812 RGBW installed on the outside of their house, but the controller does not do patterns as exciting as the FastLED library can produce. For instance, see https://github.com/FastLED/FastLED/blob/master/examples/DemoReel100/DemoReel100.ino
 
 I found the code for the ESP32 that generates the bit stream and it looks like I could hack it up to do the job, but somehow that didn't interest me as much as I thought it would. Even if I did that, it wouldn't help with other FastLED controllers besides the ESP32. It did have the advantage of getting me to see some details about the ESP32 "RMT" device; this is a fascinating capability!
