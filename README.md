@@ -5,7 +5,13 @@ The idea is to use an iCE40 FPGA to input the serial lines of an ESP32 talking t
 * https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
 * https://cdn-shop.adafruit.com/product-files/2757/p2757_SK6812RGBW_REV01.pdf
 
-![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_649x351.jpg "Concept for FPGA_RBT_2_RBGW")
+Here is the overall concept:
+
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_649x351.jpg "Overall Concept for FPGA_RBT_2_RBGW")
+
+Here is the starting concept for the FPGA:
+
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_578x184.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
 I have friends with SK6812 RGBW installed on the outside of their house, but the controller does not do patterns as exciting as the FastLED library can produce. For instance, see https://github.com/FastLED/FastLED/blob/master/examples/DemoReel100/DemoReel100.ino
 
