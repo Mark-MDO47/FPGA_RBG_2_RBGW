@@ -37,7 +37,9 @@ The reset gap on the WS2812b is 60 microseconds while the reset on the SK6812 is
 
 ## ... and FastLED.delay() continues sending while delaying
 
-Admittedly, they do that so that the dithering algorithms can get more accurate colors. However with the reset gap loss, this is a killer.
+Admittedly, they do that so that the dithering algorithms can get more accurate colors. See for instance https://github.com/FastLED/FastLED/issues/1206
+
+However, with my application and the reset gap loss, this is a killer.
 
 I will just make it a rule that when using my FPGA, one must use delay() not FastLED.delay() and the delay must be tuned to avoid a problem. Even backing up in the FIFO will disguise the reset gap on the other side.
 
