@@ -62,3 +62,4 @@ dkms.conf
 *.history
 *_tb.vcd
 ignore_*
+~*.*
