@@ -33,7 +33,7 @@ Looking again at the FastLED code, it looks like it actually sends 3-byte words 
 
 ## ... and then the rate of NOT transmitting bits
 
-The reset gap on the WS2812b is 60 microseconds while the reset on the SK6812 is 80 microseconds, so between each transmission I lose 20 microseconds
+The reset gap on the WS2812b is "above 50" microseconds while the reset on the SK6812 is 80 microseconds, so between each refresh I lose up to 30 microseconds
 
 ## ... and FastLED.delay() continues sending while delaying
 
