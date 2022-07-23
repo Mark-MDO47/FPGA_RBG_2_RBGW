@@ -45,18 +45,26 @@ module  rgb_sinp #(
     // Internal storage elements
     reg             ff_1;
     reg             ff_2;
+    reg             rstff_1;
+    reg             rstff_2;
     reg [WIDTH-1:0] count = 0;
 
     // reg             debug = 0;
     
     // Counter starts when outputs of the two flip-flops are different
     assign sig_edge = ff_1 ^ ff_2;
-    
+
+    // remove metastability of rst; provide synchronous off
+    always @ (posedge rst) begin
+        rstff_2 <= rstff_1;
+        rstff_1 <= rst;
+    end
+
     // Logic to sample signal after a period of time
-    always @ (posedge clk or posedge rst) begin
+    always @ (posedge clk) begin
     
         // Reset flip-flops
-        if (rst == 1'b1) begin
+        if (rstff_2 == 1'b1) begin
             ff_1 <= ~sig; // do an edge when come out of reset
             ff_2 <= 0;
             out <= 0;
