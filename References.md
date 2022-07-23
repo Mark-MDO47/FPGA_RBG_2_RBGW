@@ -5,6 +5,9 @@
 * https://github.com/ShawnHymel/introduction-to-fpga.git
 * https://www.latticesemi.com/products/developmentboardsandkits/icestick
 
+## Similar to above but readable, not video
+* https://verilogguide.readthedocs.io/en/latest/index.html
+
 ## Sunburst-Design: Clifford Cummings’s incredible collection of papers and presentations and several ones meaningful to me
 * BE SURE TO LOOK HERE; all the papers are listed here (and more...)
    * http://www.sunburst-design.com/papers/
