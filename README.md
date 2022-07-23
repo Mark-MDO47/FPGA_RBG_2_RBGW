@@ -55,3 +55,7 @@ I plan to have a two-port FIFO in between the input and output; maybe this would
 
 Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciFi Rubber Band Gun (RBG) that uses WS2812b LEDs:
 * https://github.com/Mark-MDO47/RubberBandGun
+
+## My collection of references
+
+https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/References.md
