@@ -70,7 +70,7 @@ module rgb_sinp_tb();
         #10
         rst = 1;
         inp_sig = 0;
-        #1
+        #5
         rst = 0;
         
         // wait some time after reset then do min-min & max-min 1 bit

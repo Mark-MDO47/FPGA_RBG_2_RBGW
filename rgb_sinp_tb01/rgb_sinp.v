@@ -54,15 +54,17 @@ module  rgb_sinp #(
     // Counter starts when outputs of the two flip-flops are different
     assign sig_edge = ff_1 ^ ff_2;
 
-    // remove metastability of rst; provide synchronous off
-    always @ (posedge rst) begin
-        rstff_2 <= rstff_1;
-        rstff_1 <= rst;
-    end
-
     // Logic to sample signal after a period of time
     always @ (posedge clk) begin
-    
+        // remove metastability of rst; provide synchronous off
+        if (rst == 1'b1) begin
+            rstff_2 <= 1'b1;
+            rstff_1 <= 1'b1;
+        end else begin
+            rstff_2 <= rstff_1;
+            rstff_1 <= 1'b0;
+        end
+
         // Reset flip-flops
         if (rstff_2 == 1'b1) begin
             ff_1 <= ~sig; // do an edge when come out of reset
