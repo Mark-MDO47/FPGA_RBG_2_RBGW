@@ -29,7 +29,7 @@ Placing an FPGA inline to do the conversion allows me to learn about Verilog, FP
 
 However, reading the specs of the two LED controllers I discovered that if the bitrate for the WS2812b is at the spec maximum then it will overflow the spec maximum bitrate of the SK6812 (because we need to transmit 4 bytes RGBW for every three bytes RGB we receive).
 
-Looking again at the FastLED code, it looks like it actually sends 3-byte words at a rate of 33,333 per second (instead of the fastest spec rate of 43,860 per second); this will fit inside the fastest spec 4-byte word rate of 34,722 per second. I still need to validate this data rate.
+Looking again at the FastLED code, it looks like the ESP-32 code actually sends 3-byte words at a rate of 33,333 per second (instead of the fastest spec rate of 43,860 per second); this will fit inside the fastest spec 4-byte word rate of 34,722 per second. I still need to validate this data rate.
 
 ## ... and then the rate of NOT transmitting bits
 
@@ -41,19 +41,19 @@ Admittedly, they do that so that the dithering algorithms can get more accurate 
 
 However, with my application and the reset gap loss, this is a killer.
 
-I will just make it a rule that when using my FPGA, one must use delay() not FastLED.delay() and the delay must be tuned to avoid a problem. Even backing up in the FIFO will disguise the reset gap on the other side.
+I will just make it a rule that when using my FPGA, one must use delay() not FastLED.delay() and the delay must be tuned to avoid a problem.
 
 ## FPGA concept
 
 My first attempt will operate just slightly inside that fastest spec RBGW rate at 34,091 32-bit LED colors per second, to give a little margin for clock error. Not that I calculated what the max clock error might be; I might need to slow it a little more to make it reliable.
 
-I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long.
+I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long and they don't continuously send (see the reset gap discussion above).
 
 ![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_578x184.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
 ## Oh my aching brain...
 
-Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciFi Rubber Band Gun (RBG) that uses WS2812b LEDs:
+Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciFi Rubber Band Gun (RBG) that uses WS2812b LEDs. Because of this I am very used to typing RBG.
 * https://github.com/Mark-MDO47/RubberBandGun
 
 ## My collection of references
