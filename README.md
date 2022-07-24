@@ -29,7 +29,7 @@ Placing an FPGA inline to do the conversion allows me to learn about Verilog, FP
 
 However, reading the specs of the two LED controllers I discovered that if the bitrate for the WS2812b is at the spec maximum then it will overflow the spec maximum bitrate of the SK6812 (because we need to transmit 4 bytes RGBW for every three bytes RGB we receive).
 
-Looking again at the FastLED code, it looks like the ESP-32 code actually sends 3-byte words at a rate of 33,333 per second (instead of the fastest spec rate of 43,860 per second); this will fit inside the fastest spec 4-byte word rate of 34,722 per second. I still need to validate this data rate.
+Looking again at the FastLED code, it looks like the ESP32 code actually sends 3-byte words at a rate of 33,333 per second (instead of the fastest spec rate of 43,860 per second); this will fit inside the fastest spec 4-byte word rate of 34,722 per second. I still need to validate this data rate.
 
 ## ... and then the rate of NOT transmitting bits
 
