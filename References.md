@@ -13,6 +13,8 @@
    * http://www.sunburst-design.com/papers/
 * SNUG 2003 (Boston) Asynchronous & Synchronous Reset Design Techniques - Part Deux Rev 1.1 Sep 2003
   * http://www.sunburst-design.com/papers/CummingsSNUG2003Boston_Resets.pdf
+* SNUG 2000 (San Jose) Nonblocking Assignments in Verilog Synthesis, Coding Styles That Kill! Rev 1.3 Sep 2009 (Voted Best Paper 1st Place)
+  * http://www.sunburst-design.com/papers/CummingsSNUG2000SJ_NBA.pdf
 * SNUG 2008 (Boston) Clock Domain Crossing (CDC) Design & Verification Techniques Using SystemVerilog Rev 1.0 Nov 2008 (Voted Best Paper 1st Place)
   * http://www.sunburst-design.com/papers/CummingsSNUG2008Boston_CDC.pdf
 * SNUG 2002 (San Jose) Simulation and Synthesis Techniques for Asynchronous FIFO Design with Asynchronous Pointer Comparisons Rev 1.1 Apr 2002 (Voted Best Paper 1st Place)
