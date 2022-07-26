@@ -12,8 +12,9 @@ Here is the overall concept:
 
 ![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_649x351.jpg "Overall Concept for FPGA_RBT_2_RBGW")
 
-If I can get any delivered, I will use the iCEstick evaluation board to house the FPGA part of the project; I am certainly not able to solder a ball-grid-array FPGA myself. The iCEstick uses the iCE40HX1K-TQ144 package from Lattice Semiconductor.
+I will use the iCEstick evaluation board to house the FPGA part of the project; I am certainly not able to solder a ball-grid-array FPGA myself. The iCEstick uses the iCE40HX1K-TQ144 package from Lattice Semiconductor.
 * https://www.latticesemi.com/products/developmentboardsandkits/icestick
+* note: one iCEstick delivered today 25 July!
 
 ## The Story
 
