@@ -45,13 +45,14 @@ module  rgb_sinp #(
     // Internal storage elements
     reg             ff_1;
     reg             ff_2;
+    reg             strobe_stretch;
     reg             rstff_1;
     reg             rstff_2;
     reg [WIDTH-1:0] count = 0;
 
     // reg             debug = 0;
     
-    // Counter starts when outputs of the two flip-flops are different
+    // Counter starts when outputs of the two flip-flops are different and ff_2 is HIGH
     assign sig_edge = ff_1 ^ ff_2;
 
     // Logic to sample signal after a period of time
@@ -80,33 +81,39 @@ module  rgb_sinp #(
                 ff_1 <= sig;
                 ff_2 <= ff_1;
                 if (sig == 1'b1) begin // rising edge; restart count
-                    count <= 1;
-                    strobe <= 0;
-                    out <= 0;
-                    stream_reset <= 0;
+                    count <= 1'b1;
+                    strobe <= 1'b0;
+                    strobe_stretch <= 1'b0;
+                    out <= 1'b0;
+                    stream_reset <= 1'b0;
                 end
             end else begin // sig == ff_1
                 // debug = ~debug; // this would be to tell we are here
                 ff_1 <= sig;
                 ff_2 <= ff_1;
                 if (strobe == 1'b1) begin
-                    strobe <= 1'b0;
-                end
-                if (stream_reset == 1'b1) begin
-                    stream_reset <= 1'b0;
+                    if (strobe_stretch == 1'b1) begin
+                        strobe_stretch = 1'b0;
+                    end else begin
+                        strobe <= 1'b0;
+                        out <= 1'b0;
+                        stream_reset <= 1'b0;
+                    end
                 end
                 if (count < SAMPLE_TIME_CLKS) begin
                     count <= count + 1;
                 end else if (count == SAMPLE_TIME_CLKS) begin
                     count <= count + 1;
-                    out <= ff_2;
                     strobe <= 1'b1;
+                    strobe_stretch <= 1'b1;
+                    out <= ff_2;
                 end else if (count < STREAM_RESET_CLKS) begin
                     count <= count + 1;
                 end else if (count == STREAM_RESET_CLKS) begin
                     count <= count + 1; // only do this code once
-                    strobe <= 1;
-                    stream_reset <= 1;
+                    strobe <= 1'b1;
+                    strobe_stretch <= 1'b1;
+                    stream_reset <= 1'b1;
                 end
             end
         end
