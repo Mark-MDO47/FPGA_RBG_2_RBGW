@@ -89,20 +89,18 @@ module  rgb_sinp #(
         
         // If rising edge on signal, run counter and sample again
         end else begin
-            if (ff_1 != ff_2) begin
-                ff_1 <= sig;
-                ff_2 <= ff_1;
-                if (sig == 1'b1) begin // rising edge; restart count
+            ff_1 <= sig;
+            ff_2 <= ff_1;
+            if (sig_edge) begin
+                if (ff_1 == 1'b1) begin // rising edge; restart count
                     count <= 1'b1;
                     strobe <= 1'b0;
                     strobe_stretch <= 1'b0;
                     sbit_value <= 1'b0;
                     stream_reset <= 1'b0;
                 end
-            end else begin // sig == ff_1
+            end else begin // sig_edge == 1'b0
                 // debug = ~debug; // this would be to tell we are here
-                ff_1 <= sig;
-                ff_2 <= ff_1;
                 if (strobe == 1'b1) begin
                     if (strobe_stretch == 1'b1) begin
                         strobe_stretch = 1'b0;
@@ -112,6 +110,7 @@ module  rgb_sinp #(
                         stream_reset <= 1'b0;
                     end
                 end
+                // the strobe == 1 event is far away from any of the following
                 if (count < SAMPLE_TIME_CLKS) begin
                     count <= count + 1;
                 end else if (count == SAMPLE_TIME_CLKS) begin
