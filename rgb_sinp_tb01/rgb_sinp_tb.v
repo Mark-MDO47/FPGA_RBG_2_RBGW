@@ -13,7 +13,7 @@
 module rgb_sinp_tb();
 
     // Internal signals
-    wire            out;
+    wire            sbit_value;
     
     // Storage elements (buttons are active low!)
     reg             clk = 0;
@@ -58,8 +58,8 @@ module rgb_sinp_tb();
         .clk(clk),
         .rst(rst),
         .sig(inp_sig),
-        .out(out),
         .strobe(strobe),
+        .sbit_value(sbit_value),
         .stream_reset(stream_reset)
     );
     

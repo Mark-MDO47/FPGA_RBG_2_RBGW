@@ -9,6 +9,18 @@
 //      (means that next bits are for first LED in string)
 // We will treat that 50 microsec as a reset whether HIGH or LOW
 //
+// inputs:
+//      clk         expected to be 96 MHz clock
+//      rst         if high on 2-3 consecutive clock posedge: reset our circuitry
+//      sig         
+//
+// outputs:
+//      strobe      high for two clocks when stream_reset and sbit_value have meaning
+//                  stream_reset    sbit_value       what it means
+//                      1               anything    50 microseconds at same level detected
+//                      0               0           bit with value "0" detected
+//                      0               1           bit with value "1" detected
+//
 // Based on: Digi-Key Introduction to FPGA #10 Metastability: Debounce signal logic without the use of a clock divider.
 //           https://www.youtube.com/watch?v=dXU1py-Od1g
 // Based on: https://forum.digikey.com/t/debounce-logic-circuit-vhdl/12573
@@ -31,8 +43,8 @@ module  rgb_sinp #(
     input           sig,            // signal value; we will do metastability mitigation and some debounce here
     
     // Outputs
-    output  reg     out,            // when strobe, and if (stream_reset == 0), bit value of 0 or 1
-    output  reg     strobe,         // strobes either "out" or "stream_reset"
+    output  reg     strobe,         // strobes either "sbit_value" or "stream_reset"
+    output  reg     sbit_value,      // when strobe, and if (stream_reset == 0), bit value of 0 or 1
     output  reg     stream_reset    // when strobe, if 1 then "stream reset" (50 microsec stable value)
 );
 
@@ -49,7 +61,6 @@ module  rgb_sinp #(
     reg             rstff_1;
     reg             rstff_2;
     reg [WIDTH-1:0] count = 0;
-
     // reg             debug = 0;
     
     // Counter starts when outputs of the two flip-flops are different and ff_2 is HIGH
@@ -68,23 +79,24 @@ module  rgb_sinp #(
 
         // Reset flip-flops
         if (rstff_2 == 1'b1) begin
-            ff_1 <= ~sig; // do an edge when come out of reset
+            ff_1 <= ~sig; // do an edge when come sbit_value of reset
             ff_2 <= 0;
-            out <= 0;
+            sbit_value <= 0;
             strobe <= 0;
+            strobe_stretch <= 0;
             stream_reset <= 0;
             count <= 0;
         
         // If rising edge on signal, run counter and sample again
         end else begin
-            if (sig != ff_1) begin
+            if (ff_1 != ff_2) begin
                 ff_1 <= sig;
                 ff_2 <= ff_1;
                 if (sig == 1'b1) begin // rising edge; restart count
                     count <= 1'b1;
                     strobe <= 1'b0;
                     strobe_stretch <= 1'b0;
-                    out <= 1'b0;
+                    sbit_value <= 1'b0;
                     stream_reset <= 1'b0;
                 end
             end else begin // sig == ff_1
@@ -96,7 +108,7 @@ module  rgb_sinp #(
                         strobe_stretch = 1'b0;
                     end else begin
                         strobe <= 1'b0;
-                        out <= 1'b0;
+                        sbit_value <= 1'b0;
                         stream_reset <= 1'b0;
                     end
                 end
@@ -106,7 +118,7 @@ module  rgb_sinp #(
                     count <= count + 1;
                     strobe <= 1'b1;
                     strobe_stretch <= 1'b1;
-                    out <= ff_2;
+                    sbit_value <= ff_2;
                 end else if (count < STREAM_RESET_CLKS) begin
                     count <= count + 1;
                 end else if (count == STREAM_RESET_CLKS) begin
