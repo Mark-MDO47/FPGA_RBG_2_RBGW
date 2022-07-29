@@ -21,6 +21,15 @@
 //                      0               0           bit with value "0" detected
 //                      0               1           bit with value "1" detected
 //
+// LIMITATIONS:
+// There are some constant sig values through reset and beyond that will not produce a stream_reset;
+//    however, the stream_reset implies a gap in communications on either input or output protocol so
+//    the effect is close enough. ALso it is just a startup issue: if no data ever arrives the output
+//    behaves the same as it would if we did pass a stream_reset; if data does arrive then the output
+//    will start up just fine. There is a 30 microsecond window (difference between input and output
+//    stream reset) that might give different results but the next "line" will flush it through.
+//    Since this is just a hobby effort I am not going to pursue it any further.
+//
 // Based on: Digi-Key Introduction to FPGA #10 Metastability: Debounce signal logic without the use of a clock divider.
 //           https://www.youtube.com/watch?v=dXU1py-Od1g
 // Based on: https://forum.digikey.com/t/debounce-logic-circuit-vhdl/12573
