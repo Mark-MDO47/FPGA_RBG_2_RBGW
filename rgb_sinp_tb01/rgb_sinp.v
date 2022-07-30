@@ -11,8 +11,8 @@
 //
 // inputs:
 //      clk         expected to be 96 MHz clock
-//      rst         if high on 2-3 consecutive clock posedge: reset our circuitry
-//      sig         
+//      rst         if high on 2-3 (or more) consecutive clock posedge: reset our circuitry
+//      sig         serial line input
 //
 // outputs:
 //      strobe      high for two clocks when stream_reset and sbit_value have meaning
@@ -75,7 +75,7 @@ module  rgb_sinp #(
     // Counter starts when outputs of the two flip-flops are different and ff_2 is HIGH
     assign sig_edge = ff_1 ^ ff_2;
 
-    // Logic to sample signal after a period of time
+    // Logic
     always @ (posedge clk) begin
         // remove metastability of rst; provide synchronous off
         if (rst == 1'b1) begin
@@ -88,12 +88,12 @@ module  rgb_sinp #(
 
         // Reset flip-flops
         if (rstff_2 == 1'b1) begin
-            ff_1 <= ~sig; // do an edge when come sbit_value of reset
-            ff_2 <= 0;
-            sbit_value <= 0;
-            strobe <= 0;
-            strobe_stretch <= 0;
-            stream_reset <= 0;
+            ff_1 <= ~sig; // do an edge when come out of reset
+            ff_2 <= 1'b0;
+            sbit_value <= 1'b0;
+            strobe <= 1'b0;
+            strobe_stretch <= 1'b0;
+            stream_reset <= 1'b0;
             count <= 0;
         
         // If rising edge on signal, run counter and sample again
@@ -112,7 +112,7 @@ module  rgb_sinp #(
                 // debug = ~debug; // this would be to tell we are here
                 if (strobe == 1'b1) begin
                     if (strobe_stretch == 1'b1) begin
-                        strobe_stretch = 1'b0;
+                        strobe_stretch <= 1'b0;
                     end else begin
                         strobe <= 1'b0;
                         sbit_value <= 1'b0;
