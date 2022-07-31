@@ -1,3 +1,6 @@
+// Mark Olson's mod of Shawn Hymel's take on Clifford Cummings's asynchronous FIFO design
+//    change params to default 32 bits data word and 8 bits address (256 x 32 FIFO)
+//
 // Simulation of Clifford Cummings's asynchronous FIFO design from the paper
 // at http://www.sunburst-design.com/papers/CummingsSNUG2002SJ_FIFO1.pdf
 //
@@ -22,8 +25,8 @@
 module async_fifo_tb();
 
     // Settings
-    localparam  DATA_SIZE = 8;
-    localparam  ADDR_SIZE = 4;
+    localparam  DATA_SIZE = 32;
+    localparam  ADDR_SIZE = 8;
     
     // Internal signals
     wire    [DATA_SIZE-1:0]     r_data;
