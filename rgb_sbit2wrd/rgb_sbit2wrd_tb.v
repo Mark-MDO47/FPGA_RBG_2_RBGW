@@ -17,6 +17,9 @@ module rgb_sbit2wrd_tb();
     reg             sbit_value = 0;     // when strobe, and if (stream_reset == 0), bit value of 0 or 1
     reg             stream_reset = 0;   // when strobe, if 1 then "stream reset" (50 microsec stable value)
 
+    // Variables
+    integer                     i;
+
     // Simulation time: 25000 * 1 us = 25 ms
     localparam DURATION = 25000;
     localparam STREAM_RESET_CLKS = 4800;
@@ -99,6 +102,44 @@ module rgb_sbit2wrd_tb();
         strobe = 1'b0;
         sbit_value = 1'b0;
         stream_reset = 1'b0;
+
+        // pass some bits through the serial-to-parallel code
+        for (i = 0; i < 24; i = i + 1) begin
+            #2
+            strobe = 1'b1;
+            sbit_value = 1'b1;
+            stream_reset = 1'b0;
+            #4
+            strobe = 1'b0;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+            #2
+            strobe = 1'b1;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+            #4
+            strobe = 1'b0;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+        end
+        for (i = 0; i < 24; i = i + 1) begin
+            #2
+            strobe = 1'b1;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+            #8
+            strobe = 1'b0;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+            #2
+            strobe = 1'b1;
+            sbit_value = 1'b1;
+            stream_reset = 1'b0;
+            #8
+            strobe = 1'b0;
+            sbit_value = 1'b0;
+            stream_reset = 1'b0;
+        end
 
     end
     
