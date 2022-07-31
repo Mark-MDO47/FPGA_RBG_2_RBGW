@@ -9,8 +9,8 @@
 // inputs:
 //      clk         expected to be 96 MHz clock
 //      rst         if high on 2-3 (or more) consecutive clock posedge: reset our circuitry
-//      strobe      high for two clocks when stream_reset and sbit_value have meaning
-//                  stream_reset    sbit_value       what it means
+//      in_strobe      high for two clocks when in_stream_reset and in_sbit_value have meaning
+//                  in_stream_reset    in_sbit_value       what it means
 //                      1               anything    50 microseconds at same level detected
 //                      0               0           bit with value "0" detected
 //                      0               1           bit with value "1" detected
@@ -18,7 +18,7 @@
 // outputs:
 //     Red/Green/Blue/Status 32-bit word and place in FIFO
 //          Status: bit7            bit6            bit5
-//                  valid           stream_reset
+//                  valid           in_stream_reset
 //
 // LIMITATIONS:
 //    none known at this time.
@@ -31,9 +31,9 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     // Inputs
     input           clk,            // clock, expected to be 96 MHz
     input           rst,            // reset command: reset this block
-    input           strobe,         // strobes either "sbit_value" or "stream_reset"
-    input           sbit_value,     // when strobe, and if (stream_reset == 0), bit value of 0 or 1
-    input           stream_reset,   // when strobe, if 1 then "stream reset" (50 microsec stable value)
+    input           in_strobe,         // strobes either "in_sbit_value" or "in_stream_reset"
+    input           in_sbit_value,     // when in_strobe, and if (in_stream_reset == 0), bit value of 0 or 1
+    input           in_stream_reset,   // when in_strobe, if 1 then "stream reset" (50 microsec stable value)
 
     
     // Outputs
@@ -48,8 +48,8 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
 
     reg [1:0]       rstff = 2'b00;      // to debounce rst
     reg [4:0]       bcount = bnum_first_data_bit;      // which bit is next: 0 thru 23 (bnum_last_data_bit)
-    reg             saw_strobe = 1'b0;  // set to one when detect strobe high; zero when low again
-    reg             strobe_stretch = 1'b0; // stretch my output strobe
+    reg             saw_strobe = 1'b0;  // set to one when detect in_strobe high; zero when low again
+    reg             strobe_stretch = 1'b0; // stretch my output in_strobe
 
     // Logic
     always @ (posedge clk) begin
@@ -64,29 +64,31 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
             saw_strobe  <= 1'b0;
             bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
-            if (strobe == 1'b1) begin
+            if (out_strobe == 1'b1) begin
                 if (strobe_stretch == 1'b1) begin
                     strobe_stretch <= 1'b0;
                 end else begin
                     out_strobe <= 1'b0;
+                    out_word[bnum_valid] <= 1'b0;
+                    out_word[bnum_stream_reset] <= 1'b0;
                 end
             end
 
-            if (strobe == 1'b0) begin // end of strobe 
+            if (in_strobe == 1'b0) begin // end of in_strobe 
                 saw_strobe <= 1'b0;
-            end else if ((saw_strobe == 1'b0) && (strobe == 1'b1)) begin // rcvd data to process
+            end else if ((saw_strobe == 1'b0) && (in_strobe == 1'b1)) begin // rcvd data to process
                 saw_strobe  <= 1'b1;
-                out_word[bnum_stream_reset] <= stream_reset;
-                out_word[bcount] <= sbit_value;
-                if ((stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to strobe output
+                out_word[bnum_stream_reset] <= in_stream_reset;
+                out_word[bcount] <= in_sbit_value;
+                if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to in_strobe output
                     strobe_stretch <= 1'b1;
                     out_strobe <= 1'b1;
                     out_word[bnum_valid] <= 1'b1;
                     bcount <= bnum_first_data_bit;
                 end else begin // we got another bit but not the last bit
                     bcount <= bcount-5'd1;
-                end // got another bit or had data to strobe out
-            end // all strobe conditions we process
+                end // got another bit or had data to in_strobe out
+            end // all in_strobe conditions we process
         end // non-reset processing
     end // always posedge clk
 endmodule
