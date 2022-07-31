@@ -72,12 +72,11 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
             end
 
             if (strobe == 1'b0) begin // end of strobe 
-                saw_strobe <= 1'b1;
+                saw_strobe <= 1'b0;
             end else if ((saw_strobe == 1'b0) && (strobe == 1'b1)) begin // rcvd data to process
                 saw_strobe  <= 1'b1;
                 out_word[bnum_stream_reset] <= stream_reset;
                 out_word[bcount] <= sbit_value;
-                
                 if ((stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to strobe output
                     strobe_stretch <= 1'b1;
                     out_strobe <= 1'b1;
