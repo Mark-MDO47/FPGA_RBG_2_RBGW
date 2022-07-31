@@ -41,12 +41,13 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     output reg          out_strobe  // high for 2 clocks when read out_word
 );
 
-    localparam bnum_last_data_bit   = 5'd23;
+    localparam bnum_first_data_bit  = 5'd23; // most significant bit first; order G-R-B
+    localparam bnum_last_data_bit   = 5'd0;
     localparam bnum_stream_reset    = 5'd30;
     localparam bnum_valid           = 5'd31;
 
     reg [1:0]       rstff = 2'b00;      // to debounce rst
-    reg [4:0]       bcount = 5'd0;      // which bit is next: 0 thru 23 (bnum_last_data_bit)
+    reg [4:0]       bcount = bnum_first_data_bit;      // which bit is next: 0 thru 23 (bnum_last_data_bit)
     reg             saw_strobe = 1'b0;  // set to one when detect strobe high; zero when low again
     reg             strobe_stretch = 1'b0; // stretch my output strobe
 
@@ -61,7 +62,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
             out_strobe  <= 1'b0;
             strobe_stretch <= 1'b0;
             saw_strobe  <= 1'b0;
-            bcount      <= 5'd0;
+            bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
             if (strobe == 1'b1) begin
                 if (strobe_stretch == 1'b1) begin
@@ -81,9 +82,9 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                     strobe_stretch <= 1'b1;
                     out_strobe <= 1'b1;
                     out_word[bnum_valid] <= 1'b1;
-                    bcount <= 5'd0;
+                    bcount <= bnum_first_data_bit;
                 end else begin // we got another bit but not the last bit
-                    bcount <= bcount+5'd1;
+                    bcount <= bcount-5'd1;
                 end // got another bit or had data to strobe out
             end // all strobe conditions we process
         end // non-reset processing
