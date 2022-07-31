@@ -1,5 +1,6 @@
 // Mark Olson's mod of Shawn Hymel's take on Clifford Cummings's asynchronous FIFO design
 //    change params to default 32 bits data word and 8 bits address (256 x 32 FIFO)
+//    use same clock for read and write
 //
 // Simulation of Clifford Cummings's asynchronous FIFO design from the paper
 // at http://www.sunburst-design.com/papers/CummingsSNUG2002SJ_FIFO1.pdf
@@ -48,15 +49,10 @@ module async_fifo_tb();
     // Simulation time: 10000 * 1 us = 10 ms
     localparam DURATION = 10000;
     
-    // Generate read clock signal (about 12 MHz)
+    // Generate read and write clock signal (about 96 MHz)
     always begin
-        #0.04167
+        #0.00520875 // 0.04167 for 12 MHz
         r_clk = ~r_clk;
-    end
-    
-    // Generate write clock signal (5 MHz)
-    always begin
-        #0.1
         w_clk = ~w_clk;
     end
     
@@ -90,36 +86,36 @@ module async_fifo_tb();
         
         // Write some data to the FIFO
         for (i = 0; i < 4; i = i + 1) begin
-            #0.2
+            #0.0104175
             w_data = i;
             w_en = 1'b1;
         end
-        #0.2
+        #0.0104175
         w_en = 1'b0;
         
         // Try to read more than what's in the FIFO
         for (i = 0; i < 6; i = i + 1) begin
-            #0.08334
+            #0.0104175
             r_en = 1'b1;
         end
-        #0.08334
+        #0.0104175
         r_en = 1'b0;
         
         // Fill up FIFO (and then some)
         for (i = 0; i < 18; i = i + 1) begin
-            #0.2
+            #0.0104175
             w_en = 1'b1;
             w_data = i;
         end
-        #0.2
+        #0.0104175
         w_en = 1'b0;
         
         // Read everything in the FIFO (and then some)
         for (i = 0; i < 18; i = i + 1) begin
-            #0.08334
+            #0.0104175
             r_en = 1'b1;
         end
-        #0.08334
+        #0.0104175
         r_en = 1'b0;
             
     end
