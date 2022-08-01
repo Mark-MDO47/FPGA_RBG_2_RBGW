@@ -120,7 +120,33 @@ module async_fifo_tb();
             #0.01
             r_en = 1'b0;
         end
-            
+
+        // simultaneous read/write
+        for (i = 0; i < 3; i = i + 1) begin
+            #0.1
+            w_en = 1'b1;
+            w_data = i;
+            #0.01
+            w_en = 1'b0;
+        end
+
+        for (i = 3; i < 15; i = i + 1) begin
+            #0.1
+            r_en = 1'b1;
+            w_en = 1'b1;
+            w_data = i;
+            #0.01
+            w_en = 1'b0;
+            r_en = 1'b0;
+        end
+        for (i = 15; i < 20; i = i + 1) begin
+            #0.1
+            r_en = 1'b1;
+            #0.01
+            r_en = 1'b0;
+        end
+
+
     end
     
         // Run simulation
