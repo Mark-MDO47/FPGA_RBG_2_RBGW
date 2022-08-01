@@ -1,6 +1,7 @@
 // Mark Olson's mod of Shawn Hymel's take on Clifford Cummings's asynchronous FIFO design
 //    change params to default 32 bits data word and 8 bits address (256 x 32 FIFO)
 //    use same clock for read and write
+//    spread out FIFO access; in my app only one write or read at a time widely separated
 //
 // Simulation of Clifford Cummings's asynchronous FIFO design from the paper
 // at http://www.sunburst-design.com/papers/CummingsSNUG2002SJ_FIFO1.pdf
@@ -51,7 +52,7 @@ module async_fifo_tb();
     
     // Generate read and write clock signal (about 96 MHz)
     always begin
-        #0.00520875 // 0.04167 for 12 MHz
+        #0.005 // 0.04167 for 12 MHz
         r_clk = ~r_clk;
         w_clk = ~w_clk;
     end
@@ -83,40 +84,42 @@ module async_fifo_tb();
         #0.01
         w_rst = 0;
         r_rst = 0;
+        #0.005 // line things up
+        r_rst = 0;
         
         // Write some data to the FIFO
         for (i = 0; i < 4; i = i + 1) begin
-            #0.0104175
+            #0.05
             w_data = i;
             w_en = 1'b1;
+            #0.01
+            w_en = 1'b0;
         end
-        #0.0104175
-        w_en = 1'b0;
         
         // Try to read more than what's in the FIFO
         for (i = 0; i < 6; i = i + 1) begin
-            #0.0104175
+            #0.05
             r_en = 1'b1;
+            #0.01
+            r_en = 1'b0;
         end
-        #0.0104175
-        r_en = 1'b0;
         
         // Fill up FIFO (and then some)
         for (i = 0; i < 18; i = i + 1) begin
-            #0.0104175
+            #0.05
             w_en = 1'b1;
             w_data = i;
+            #0.01
+            w_en = 1'b0;
         end
-        #0.0104175
-        w_en = 1'b0;
         
         // Read everything in the FIFO (and then some)
-        for (i = 0; i < 18; i = i + 1) begin
-            #0.0104175
+        for (i = 0; i < 20; i = i + 1) begin
+            #0.05
             r_en = 1'b1;
+            #0.01
+            r_en = 1'b0;
         end
-        #0.0104175
-        r_en = 1'b0;
             
     end
     
