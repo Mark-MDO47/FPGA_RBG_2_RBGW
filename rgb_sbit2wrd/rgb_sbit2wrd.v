@@ -49,7 +49,6 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     reg [1:0]       rstff = 2'b00;      // to debounce rst
     reg [4:0]       bcount = bnum_first_data_bit;      // which bit is next: 0 thru 23 (bnum_last_data_bit)
     reg             saw_strobe = 1'b0;  // set to one when detect in_strobe high; zero when low again
-    reg             strobe_stretch = 1'b0; // stretch my output in_strobe
 
     // Logic
     always @ (posedge clk) begin
@@ -60,18 +59,14 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
         if (rstff[1] == 1'b1) begin // Reset processing
             out_word    <= 32'd0;
             out_strobe  <= 1'b0;
-            strobe_stretch <= 1'b0;
             saw_strobe  <= 1'b0;
             bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
             if (out_strobe == 1'b1) begin
-                if (strobe_stretch == 1'b1) begin
-                    strobe_stretch <= 1'b0;
-                end else begin
-                    out_strobe <= 1'b0;
-                    out_word[bnum_valid] <= 1'b0;
-                    out_word[bnum_stream_reset] <= 1'b0;
-                end
+                out_strobe <= 1'b0;
+                out_word[bnum_valid] <= 1'b0;
+                bcount <= bnum_first_data_bit;
+                out_word[bnum_stream_reset] <= 1'b0;
             end
 
             if (in_strobe == 1'b0) begin // end of in_strobe 
@@ -81,7 +76,6 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                 out_word[bnum_stream_reset] <= in_stream_reset;
                 out_word[bcount] <= in_sbit_value;
                 if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to in_strobe output
-                    strobe_stretch <= 1'b1;
                     out_strobe <= 1'b1;
                     out_word[bnum_valid] <= 1'b1;
                     bcount <= bnum_first_data_bit;
