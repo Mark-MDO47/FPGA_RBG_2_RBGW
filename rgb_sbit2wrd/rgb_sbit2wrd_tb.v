@@ -9,6 +9,9 @@
 module rgb_sbit2wrd_tb();
 
     // Internal signals
+    wire [31:0] out_word;
+    wire out_strobe;
+    wire need_a_manger;
 
     // Storage elements (buttons are active low!)
     reg             clk = 1'b0;
@@ -16,13 +19,14 @@ module rgb_sbit2wrd_tb();
     reg             in_strobe = 1'b0;         // input in_strobe to rgb_sbit2wrd
     reg             in_sbit_value = 1'b0;     // when in_strobe, and if (in_stream_reset == 0), bit value of 0 or 1
     reg             in_stream_reset = 1'b0;   // when in_strobe, if 1 then "stream reset" (50 microsec stable value)
+    reg             fifo_full = 1'b0;         // when 1, rgb_sbit2wrd cannot strobe a word
 
     reg             bit_first  = 1'b1;
     reg             bit_second = 1'b0;
 
     // Variables
-    integer                     i;
-    integer                     j;
+    integer                     i = 0;
+    integer                     j = 0;
 
     // Simulation time: 25000 * 1 us = 25 ms
     localparam DURATION = 25000;
@@ -44,9 +48,11 @@ module rgb_sbit2wrd_tb();
         .in_strobe(in_strobe),
         .in_sbit_value(in_sbit_value),
         .in_stream_reset(in_stream_reset),
+        .no_room_at_the_fifo_inn(fifo_full),
         // outputs
         .out_word(out_word),
-        .out_strobe(out_strobe)
+        .out_strobe(out_strobe),
+        .need_a_manger(fifo_overflow)
     );
 
     // Test control: pulse reset and create some RGB bits and timeouts
@@ -109,6 +115,7 @@ module rgb_sbit2wrd_tb();
 
         // pass some bits through the serial-to-parallel code - two clocks in_strobe
         for (j = 0; j < 4; j = j + 1) begin
+            if (3 == j) fifo_full = 1'b1;
             for (i = 0; i < 12; i = i + 1) begin
                 #2
                 in_strobe = 1'b1;
@@ -145,6 +152,7 @@ module rgb_sbit2wrd_tb();
             end // i-loop
             bit_first = ~bit_first;
             bit_second = ~bit_second;
+            fifo_full = 1'b0;
         end // j-loop
         
         // put stream reset with no bits in counter - two clocks in_strobe
