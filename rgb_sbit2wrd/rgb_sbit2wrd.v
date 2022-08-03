@@ -48,9 +48,10 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     localparam bnum_stream_reset    = 5'd30;
     localparam bnum_valid           = 5'd31;
 
-    reg [1:0]       rstff = 2'b00;      // to debounce rst
-    reg [4:0]       bcount = bnum_first_data_bit;      // which bit is next: 0 thru 23 (bnum_last_data_bit)
-    reg             saw_strobe = 1'b0;  // set to one when detect in_strobe high; zero when low again
+    reg [1:0]       rstff = 2'b00;                  // to debounce rst
+    reg [4:0]       bcount = bnum_first_data_bit;   // which bit is next: 0 thru 23 (bnum_last_data_bit)
+    reg             saw_in_strobe = 1'b0;              // set to one when detect in_strobe high; zero when low again
+    reg             wait_for_stream_reset = 1'b0;   // wr_fifo_ovflw -> no fifo wr till stream reset (resync)
 
     // Logic
     always @ (posedge clk) begin
@@ -62,7 +63,8 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
             out_word    <= 32'd0;
             out_strobe  <= 1'b0;
             out_wr_fifo_overflow <= 1'b0;
-            saw_strobe  <= 1'b0;
+            wait_for_stream_reset <= 1'b0;
+            saw_in_strobe  <= 1'b0;
             bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
             if (out_strobe == 1'b1) begin
@@ -71,27 +73,23 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                 out_word[bnum_stream_reset] <= 1'b0;
                 bcount <= bnum_first_data_bit;
             end
-
-            if (out_wr_fifo_overflow == 1'b1) begin // FIFO overflow; do a stream_reset
-                if (1'b0 == in_wr_fifo_full) begin
-                    saw_strobe  <= 1'b0;
-                    out_word[bnum_stream_reset] <= 1'b1;
-                    out_word[bnum_valid] <= 1'b1;
-                    out_strobe <= 1'b1;
-                end
-            end else if (in_strobe == 1'b0) begin // end of in_strobe 
-                saw_strobe <= 1'b0;
-            end else if ((saw_strobe == 1'b0) && (in_strobe == 1'b1)) begin // rcvd data to process
-                saw_strobe  <= 1'b1;
+            if (in_strobe == 1'b0) begin // end of in_strobe 
+                saw_in_strobe <= 1'b0;
+            end else if ((saw_in_strobe == 1'b0) && (in_strobe == 1'b1)) begin // rcvd data to process
+                saw_in_strobe  <= 1'b1;
                 out_word[bcount] <= in_sbit_value;
                 out_word[bnum_stream_reset] <= (in_stream_reset | in_wr_fifo_full);
-                if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to in_strobe output
-                    if (in_wr_fifo_full == 1'b1) begin
+                if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to out_strobe a word
+                    if (in_wr_fifo_full == 1'b1) begin // cannot out_strobe; overflow
                         out_wr_fifo_overflow <= 1'b1; // sticky error - FIFO overflow
-                    end else begin
-                        out_strobe <= 1'b1;
-                        out_word[bnum_valid] <= 1'b1;
-                    end
+                        wait_for_stream_reset = 1'b1; // resync with input stream reset
+                    end else begin // there is now room in FIFO and an output
+                        if ((1'b0 == wait_for_stream_reset) || ((1'b1 == wait_for_stream_reset) && (1'b1 == in_stream_reset))) begin
+                            out_strobe <= 1'b1;
+                            out_word[bnum_valid] <= 1'b1;
+                            wait_for_stream_reset = 1'b0;
+                        end // regular or resync out_strobe
+                    end // we want to out_strobe
                     bcount <= bnum_first_data_bit;
                 end else begin // we got another bit but not the last bit
                     bcount <= bcount-5'd1;
