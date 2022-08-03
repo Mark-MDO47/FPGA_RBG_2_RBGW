@@ -48,11 +48,11 @@ module rgb_sbit2wrd_tb();
         .in_strobe(rgb_sbit_strobe),
         .in_sbit_value(rgb_sbit_value),
         .in_stream_reset(rgb_sbit_stream_reset),
-        .no_room_at_the_fifo_inn(rgb_wr_fifo_full),
+        .in_wr_fifo_full(rgb_wr_fifo_full),
         // outputs
         .out_word(rgb_wr_word),
         .out_strobe(rgb_wr_strobe),
-        .need_a_manger(rgb_wr_fifo_overflow)
+        .out_wr_fifo_overflow(rgb_wr_fifo_overflow)
     );
 
     // Test control: pulse reset and create some RGB bits and timeouts

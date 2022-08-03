@@ -34,13 +34,13 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     input           in_strobe,          // strobes either "in_sbit_value" or "in_stream_reset"
     input           in_sbit_value,      // when in_strobe, and if (in_stream_reset == 0), bit value of 0 or 1
     input           in_stream_reset,    // when in_strobe, if 1 then "stream reset" (50 microsec stable value)
-    input           no_room_at_the_fifo_inn, // when 1, cannot strobe output
+    input           in_wr_fifo_full,    // when 1, cannot strobe output
 
     
     // Outputs
-    output reg [31:0]   out_word,       // 8-bits each for R/G/B & 8-bits status
-    output reg          out_strobe,     // high for 1 clock when read out_word
-    output reg          need_a_manger   // 1 if we ever need to strobe but cannot
+    output reg [31:0]   out_word,               // 8-bits each for R/G/B & 8-bits status
+    output reg          out_strobe,             // high for 1 clock when read out_word
+    output reg          out_wr_fifo_overflow    // 1 if we ever need to strobe but cannot
 );
 
     localparam bnum_first_data_bit  = 5'd23; // most significant bit first; order G-R-B
@@ -61,7 +61,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
         if (rstff[1] == 1'b1) begin // Reset processing
             out_word    <= 32'd0;
             out_strobe  <= 1'b0;
-            need_a_manger <= 1'b0;
+            out_wr_fifo_overflow <= 1'b0;
             saw_strobe  <= 1'b0;
             bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
@@ -72,9 +72,8 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                 bcount <= bnum_first_data_bit;
             end
 
-            if (need_a_manger == 1'b1) begin // FIFO overflow; do a stream_reset
-                if (1'b0 == no_room_at_the_fifo_inn) begin
-                    need_a_manger <= 1'b0;
+            if (out_wr_fifo_overflow == 1'b1) begin // FIFO overflow; do a stream_reset
+                if (1'b0 == in_wr_fifo_full) begin
                     saw_strobe  <= 1'b0;
                     out_word[bnum_stream_reset] <= 1'b1;
                     out_word[bnum_valid] <= 1'b1;
@@ -85,10 +84,10 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
             end else if ((saw_strobe == 1'b0) && (in_strobe == 1'b1)) begin // rcvd data to process
                 saw_strobe  <= 1'b1;
                 out_word[bcount] <= in_sbit_value;
-                out_word[bnum_stream_reset] <= (in_stream_reset | no_room_at_the_fifo_inn);
+                out_word[bnum_stream_reset] <= (in_stream_reset | in_wr_fifo_full);
                 if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to in_strobe output
-                    if (no_room_at_the_fifo_inn == 1'b1) begin
-                        need_a_manger <= 1'b1; // sticky error - FIFO overflow
+                    if (in_wr_fifo_full == 1'b1) begin
+                        out_wr_fifo_overflow <= 1'b1; // sticky error - FIFO overflow
                     end else begin
                         out_strobe <= 1'b1;
                         out_word[bnum_valid] <= 1'b1;
