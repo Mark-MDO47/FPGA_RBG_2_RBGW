@@ -12,7 +12,7 @@ The protocol can be found in this spec:
 
 In the diagram below, this module is part of the block labeled "Serial to Parallel". It will be followed by another internal block that takes the streams of 0 and 1, turns it into 3 @ 8-bit bytes (one RGB LED word), appends a status byte, and places it into the FIFO.
 
-![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_578x184.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_scaled.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
 Kudos to Shawn Hymel of the Digi-Key team; he did the fantastic YouTube series "Digi-Key Introduction to FPGA". My rgb_sinp.v code is a (heavily) modified form of "debouncer.v" from "Introduction to FPGA Part 10 - Metastability and Clock Domain Crossing" signal logic.
 * https://www.youtube.com/watch?v=dXU1py-Od1g
