@@ -16,7 +16,7 @@
 //                      0               1           bit with value "1" detected
 //
 // outputs:
-//     Status/Green/Red/Blue 32-bit word and place in FIFO
+//      Status/Green/Red/Blue 32-bit word and place in FIFO
 //      Status byte: bit7            bit6             bit5-0
 //                   valid           in_stream_reset  spare
 //
@@ -39,7 +39,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     
     // Outputs
     output reg [31:0]   out_word,               // 8-bits each for R/G/B & 8-bits status
-    output reg          out_strobe,             // high for 1 clock when read out_word
+    output reg          out_strobe,             // high for 1 clock when have out_word to send
     output reg          out_wr_fifo_overflow    // 1 if we ever need to strobe but cannot
 );
 
