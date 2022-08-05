@@ -16,9 +16,9 @@
 //                      0               1           bit with value "1" detected
 //
 // outputs:
-//     Red/Green/Blue/Status 32-bit word and place in FIFO
-//          Status: bit7            bit6            bit5
-//                  valid           in_stream_reset
+//     Status/Green/Red/Blue 32-bit word and place in FIFO
+//      Status byte: bit7            bit6             bit5-0
+//                   valid           in_stream_reset  spare
 //
 // LIMITATIONS:
 //    none known at this time.
