@@ -50,7 +50,7 @@ My first attempt will operate just slightly inside that fastest spec RBGW rate a
 
 I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long and they don't continuously send (see the reset gap discussion above).
 
-![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_578x184.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_scaled.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
 ## Oh my aching brain...
 
