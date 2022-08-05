@@ -13,8 +13,8 @@ It is, however, possible that a read and a write happen at the same time, but we
 async_fifo.v is capable of handling multiple consecutive reads or writes but that capability is not used in FPGA_RBG_2_RBGW.
 
 One consequence of this widely separated use of the read or write interface is that the FIFO-full or FIFO-empty inputs will be valid (for our use)
-at the time we look at them. FIFO-full might actually lag a bit if words are being removed, but for our use we would prefer that this signal be TRUE
-for a little longer than necessary compared to having it falsely show TRUE when we are ready to store a word. The same with FIFO-empty.
+at the time we look at them. FIFO-full might actually lag a bit if words are being removed, but for our use we would prefer that this signal be FULL
+for a little longer than necessary compared to having it falsely show NOT-FULL when we are ready to store a word. The same with FIFO-empty.
 
 For information on the format of the 32-bit data words, see the READMEs for
 * rbg_sbit2wrd - the block that stores data into the FIFO
