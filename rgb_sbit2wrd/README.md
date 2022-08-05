@@ -54,6 +54,6 @@ MSbyte | byte | byte | LSbyte
  
  At this point we are in some arbitrary point in a stream of data to a string of LEDs and we will lose data.
  The approach to re-synchronize with the input stream is to stop placing data into the FIFO until 
- we get in_stream_reset AND in_wr_fifo_full is 0. This is end of a string of LED words; the next LED word starts at the first LED. It is the perfect place to start up processing again.
+ we get in_stream_reset AND in_wr_fifo_full is 0. This is the end of a string of LED words; the next LED word starts at the first LED so it is the perfect place to start up processing again.
   
  
