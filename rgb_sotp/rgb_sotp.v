@@ -63,22 +63,29 @@ module  rgb_sotp #(
     localparam RGBW_T1H = 45; // num of clocks to use output - see SK6812RGBW spec
     localparam RGBW_T1L = 45; // num of clocks to use output - see SK6812RGBW spec
 
-    localparam state_wait_rst       = 4'd0;
-    localparam state_send_t0h       = 4'd1;
-    localparam state_send_t0l       = 4'd2;
-    localparam state_send_t1h       = 4'd3;
-    localparam state_send_t1l       = 4'd4;
-    localparam state_strm_rst       = 4'd5;
-    localparam state_wait_fifo      = 4'd6;
-    localparam state_get_fifo_dat   = 4'd7;
-    localparam state_cnvrt_dat_1    = 4'd8;
-    localparam state_cnvrt_dat_2    = 4'd9;
-    localparam state_cnvrt_dat_3    = 4'd10;
-    localparam state_ilgl_go_wait1  = 4'd11;
-    localparam state_ilgl_go_wait2  = 4'd12;
-    localparam state_ilgl_go_wait3  = 4'd13;
-    localparam state_ilgl_go_wait4  = 4'd14;
-    localparam state_ilgl_go_wait5  = 4'd15;
+
+    // state machine one (supervisor) gets data from FIFO and feeds serial output
+    localparam state1_wait_rst       = 4'd0;
+    localparam state1_wait_start     = 4'd1;
+    localparam state1_get_fifo_dat   = 4'd2;
+    localparam state1_cnvrt_dat_1    = 4'd3;
+    localparam state1_cnvrt_dat_2    = 4'd4;
+    localparam state1_cnvrt_dat_3    = 4'd5;
+    localparam state1_out_red        = 4'd6;
+    localparam state1_out_green      = 4'd7;
+    localparam state1_out_blue       = 4'd8;
+    localparam state1_out_white      = 4'd9;
+    localparam state1_out_strm_rst   = 4'd5;
+
+    // state machine 2 (serial output) outputs a byte 1 bit at a time
+    localparam state2_wait_rst       = 3'd0;
+    localparam state2_wait_start     = 3'd1;
+    localparam state2_send_bit       = 3'd2;
+    localparam state2_next_bit       = 3'd3;
+    localparam state2_send_t0h       = 3'd4;
+    localparam state2_send_t0l       = 3'd5;
+    localparam state2_send_t1h       = 3'd6;
+    localparam state2_send_t1l       = 3'd7;
 
     // Internal signals
     wire            sig_edge;
@@ -86,7 +93,7 @@ module  rgb_sotp #(
     // Internal storage elements
     reg [1:0]       rstff = 2'b00;                  // to debounce rst
     reg [WID_MSB:0] count = WIDTH'd0;
-    reg [3:0]       state = state_wait_rst;
+    reg [3:0]       state = state1_wait_rst;
     // reg [7:0]       fifo_dat_status = 8'b0;
     reg [7:0]       fifo_dat_red = 8'b0;
     reg [7:0]       fifo_dat_green = 8'b0;
@@ -104,74 +111,74 @@ module  rgb_sotp #(
             out_sig <= 1'b0;
             out_rd_fifo_en <= 1'b0;
             count <= WIDTH'd0;
-            state = state_wait_fifo;
+            state = state1_wait_fifo;
         // If rising edge on signal, run counter and sample again
         end else begin
             case (state)
-                case state_wait_fifo: begin
+                case state1_wait_fifo: begin
                     if (1'b0 == in_rd_fifo_empty) begin
                         out_rd_fifo_en = 1'b1;
-                        state <= state_get_fifo_dat;
+                        state <= state1_get_fifo_dat;
                     end
-                end // case state_wait_fifo
+                end // case state1_wait_fifo
 
-                case state_get_fifo_dat: begin
+                case state1_get_fifo_dat: begin
                     out_rd_fifo_en = 1'b0;
                     if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
                         count = STREAM_RESET_CLKS;
-                        state <= state_strm_rst;
+                        state <= state1_strm_rst;
                     end else begin
                         fifo_dat_red   <= in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit];
                         fifo_dat_green <= in_rd_fifo_data[bnum_G_first_data_bit:bnum_G_last_data_bit];
                         fifo_dat_blue  <= in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit];
                         calc_min_color <= in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit];
-                        state <= state_cnvrt_dat_1;
+                        state <= state1_cnvrt_dat_1;
                     end
-                end // case state_wait_fifo
+                end // case state1_wait_fifo
 
-                case state_cnvrt_dat_1: begin
+                case state1_cnvrt_dat_1: begin
                     if (calc_min_color > fifo_dat_red) calc_min_color <= fifo_dat_red;
-                    state <= state_cnvrt_dat_2;
-                end // case state_cnvrt_dat_1
-                case state_cnvrt_dat_2: begin
+                    state <= state1_cnvrt_dat_2;
+                end // case state1_cnvrt_dat_1
+                case state1_cnvrt_dat_2: begin
                     if (calc_min_color > fifo_dat_green) calc_min_color <= fifo_dat_green;
-                    state <= state_cnvrt_dat_3;
-                end // case state_cnvrt_dat_2
-                case state_cnvrt_dat_3: begin
+                    state <= state1_cnvrt_dat_3;
+                end // case state1_cnvrt_dat_2
+                case state1_cnvrt_dat_3: begin
                     fifo_dat_red   <= fifo_dat_red - calc_min_color;
                     fifo_dat_green <= fifo_dat_green - calc_min_color;
                     fifo_dat_blue  <= fifo_dat_blue - calc_min_color;
 
-                    state <= state_SEND_COLORS; FIXME
-                end // case state_cnvrt_dat_3
+                    state <= state1_SEND_COLORS; FIXME
+                end // case state1_cnvrt_dat_3
 
 
-                case state_: begin
-                        state <= state_;
-                end // case state_
-                case state_: begin
-                    state <= state_;
-                end // case state_
-                case state_: begin
-                        state <= state_;
-                end // case state_
-                case state_: begin
-                    state <= state_;
-                end // case state_
-                case state_: begin
-                        state <= state_;
-                end // case state_
-                case state_: begin
-                    state <= state_;
-                end // case state_
-                case state_: begin
-                        state <= state_;
-                end // case state_
+                case state1_: begin
+                        state <= state1_;
+                end // case state1_
+                case state1_: begin
+                    state <= state1_;
+                end // case state1_
+                case state1_: begin
+                        state <= state1_;
+                end // case state1_
+                case state1_: begin
+                    state <= state1_;
+                end // case state1_
+                case state1_: begin
+                        state <= state1_;
+                end // case state1_
+                case state1_: begin
+                    state <= state1_;
+                end // case state1_
+                case state1_: begin
+                        state <= state1_;
+                end // case state1_
 
                 // Go to wait_fifo if in unknown state
-                default: state <= state_wait_fifo;
+                default: state <= state1_wait_fifo;
 			endcase // on state
         end
-    end
+    end // always
     
 endmodule
