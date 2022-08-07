@@ -36,7 +36,7 @@ Looking again at the FastLED code, it looks like the ESP32 code actually sends 3
 
 For both WS2812b (RGB) and SK6812 (RGBW), we send a stream of LED instructions that is as long as the LED string we are controlling. To signal to the LEDs that we are starting a new stream of LED instructions, we insert a LOW serial value for a long time (the stream-reset time).
 
-The stream-reset time on the WS2812b is "above 50" microseconds while the reset on the SK6812 is 80 microseconds, so for each stream-reset from RGB to RGBW I lose up to 30 microseconds. I call this the stream-reset gap.
+The stream-reset time on the WS2812b is "above 50" microseconds while the stream-reset time on the SK6812 is 80 microseconds, so for each stream-reset from RGB to RGBW I lose about to 30 microseconds. I call this the stream-reset gap.
 
 ## ... and FastLED.delay() continues sending while delaying
 
