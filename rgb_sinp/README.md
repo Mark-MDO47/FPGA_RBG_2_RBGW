@@ -5,7 +5,8 @@ The RGB serial input module monitors the serial input line and converts it to a 
 The stream reset is the protocol that tells the string of LEDs that we are starting over talking to LED 0 (the first one in the string). It consists of holding the serial line LOW for >= 50 microseconds.
 * NOTE: in my implementation, it asserts "stream reset" if either HIGH or LOW are held steady for >= 50 microseconds.
 
-The "1"s and "0"s are detected by determining the length of the HIGH pulse of the HIGH/LOW which constitute each bit.
+The "1"s and "0"s are detected by determining the length of the HIGH pulse of the HIGH/LOW which constitute each bit as shown below. The gray line "sample" that goes through the signal timelines illustrates where the sample will be taken. The other lines are various combinations, for "1" bits and for "0" bits, of the minimum and maximum specified timing for the HIGH pulse and LOW pulse. A sample taken at this time shows a HIGH for every "1" bit and a LOW for every "0" bit.
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/WS2812B_sample_time_scaled.jpg "WS2812B Sample Time Approach")
 
 The protocol can be found in this spec:
 * https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf
