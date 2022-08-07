@@ -19,3 +19,7 @@ for a little longer than necessary compared to having it falsely show NOT-FULL w
 For information on the format of the 32-bit data words, see the READMEs for
 * rbg_sbit2wrd - the block that stores data into the FIFO
 * rbg_sotp - the block that reads data from the FIFO
+
+Kudos to Shawn Hymel of the Digi-Key team; he did the fantastic YouTube series "Digi-Key Introduction to FPGA". My async-fifo.v code is unchanged from "async-fifo.v" from "Introduction to FPGA Part 10 - Metastability and Clock Domain Crossing" signal logic.
+* https://www.youtube.com/watch?v=dXU1py-Od1g
+* https://github.com/ShawnHymel/introduction-to-fpga
