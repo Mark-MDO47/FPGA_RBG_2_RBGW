@@ -1,4 +1,4 @@
-// Testbench for rgb_sinp
+// Testbench for rgb_sbit2wrd
 // Mark Olson 2022-07-29
 //
 
