@@ -7,12 +7,10 @@
 // We expect to use a 96 MHz clock; derived from the PLL based on our 12 MHz internal clock
 //
 // inputs:
-//     Red/Green/Blue/Status 32-bit word and place in FIFO
+//     Status/Green/Red/Blue 32-bit word and place in FIFO (see bnum_* localparams)
 //          Status: bit7            bit6            bit5
 //                  valid           in_stream_reset
-
-
-
+//
 //      clk         expected to be 96 MHz clock
 //      rst         if high on 2-3 (or more) consecutive clock posedge: reset our circuitry
 //      sig         serial line input
@@ -28,9 +26,13 @@
 // RGBW Serial Output logic
 module  rgb_sotp #(
 
-    // Parameters
-    parameter COUNTER_MAX = 7800,           // a little extra room in the counter (makes no difference in bit width)
-    parameter STREAM_RESET_CLKS = 7681     // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
+    // Parameters - defaults are correct; over-ride for faster testbench
+    parameter RGBW_T0H = 16,        // num of clocks to use output - see SK6812RGBW spec
+    parameter RGBW_T0L = 74,        // num of clocks to use output - see SK6812RGBW spec
+    parameter RGBW_T1H = 45,        // num of clocks to use output - see SK6812RGBW spec
+    parameter RGBW_T1L = 45,        // num of clocks to use output - see SK6812RGBW spec
+    parameter RGBW_STR_RST = 7681,  // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
+    parameter COUNTER_MAX = 7800    // a little extra room in the counter (makes no difference in bit width)
 ) (
 
     // Inputs
@@ -49,8 +51,8 @@ module  rgb_sotp #(
     localparam WIDTH = $clog2(COUNTER_MAX + 1);
     localparam WID_MSB = WIDTH-1;
 
-    localparam bnum_valid             = 5'd31;
-    localparam bnum_stream_reset      = 5'd30;
+    localparam bnum_valid             = 5'd31; // not used (yet)
+    localparam bnum_stream_reset      = 5'd30; // 1 = other bits invalid, just do stream-reset
     localparam bnum_G_first_data_bit  = 5'd23; // most significant bit highest; order G-R-B
     localparam bnum_G_last_data_bit   = 5'd16; // most significant bit highest; order G-R-B
     localparam bnum_R_first_data_bit  = 5'd15; // most significant bit highest; order G-R-B
@@ -59,7 +61,7 @@ module  rgb_sotp #(
     localparam bnum_B_last_data_bit   = 5'd0;  // most significant bit highest; order G-R-B
 
 
-    // state machine one (supervisor) gets data from FIFO and feeds serial output
+    // state machine one (supervisor) gets data from FIFO and feeds state machine 2 (serial output)
     localparam STATE1_WAIT_FIFO      = 4'd0;
     localparam STATE1_GET_FIFO_DAT   = 4'd1;
     localparam STATE1_CNVRT_DAT_1    = 4'd2;
@@ -70,12 +72,7 @@ module  rgb_sotp #(
     localparam STATE1_OUT_BLUE       = 4'd7;
     localparam STATE1_OUT_LAST       = 4'd8;
 
-    localparam RGBW_T0H = 16; // num of clocks to use output - see SK6812RGBW spec
-    localparam RGBW_T0L = 74; // num of clocks to use output - see SK6812RGBW spec
-    localparam RGBW_T1H = 45; // num of clocks to use output - see SK6812RGBW spec
-    localparam RGBW_T1L = 45; // num of clocks to use output - see SK6812RGBW spec
-
-    // state machine 2 (serial output) outputs a byte 1 bit at a time
+    // state machine 2 (serial output) outputs a byte 1 bit at a time or does stream-reset
     localparam STATE2_WAIT_START    = 3'd0;
     localparam STATE2_SEND_T0H      = 3'd1;
     localparam STATE2_SEND_T0L      = 3'd2;
@@ -124,7 +121,7 @@ module  rgb_sotp #(
                 STATE1_GET_FIFO_DAT: begin
                     out_rd_fifo_en <= 1'b0;
                     if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
-                        outserial_count <= STREAM_RESET_CLKS;
+                        outserial_count <= RGBW_STR_RST;
                         outbit_count <= 4'd15; // code for stream_reset
                         state1 <= STATE1_OUT_LAST;
                     end else begin
@@ -192,7 +189,7 @@ module  rgb_sotp #(
                 STATE2_WAIT_START: begin
                     if (4'd15 == outbit_count) begin // stream_reset
                         out_sig <= 1'b0;
-                        outserial_count = STREAM_RESET_CLKS;
+                        outserial_count = RGBW_STR_RST;
                     end else if (4'd0 != outbit_count) begin
                         out_sig <= 1'b1;
                         outbit_count = outbit_count - 5'd1;
