@@ -34,13 +34,15 @@ Looking again at the FastLED code, it looks like the ESP32 code actually sends 3
 
 ## ... and then the rate of NOT transmitting bits
 
-The reset gap on the WS2812b is "above 50" microseconds while the reset on the SK6812 is 80 microseconds, so between each refresh I lose up to 30 microseconds
+For both WS2812b (RGB) and SK6812 (RGBW), we send a stream of LED instructions that is as long as the LED string we are controlling. To signal to the LEDs that we are starting a new stream of LED instructions, we insert a LOW serial value for a long time (the stream-reset time).
+
+The stream-reset time on the WS2812b is "above 50" microseconds while the reset on the SK6812 is 80 microseconds, so for each stream-reset from RGB to RGBW I lose up to 30 microseconds. I call this the stream-reset gap.
 
 ## ... and FastLED.delay() continues sending while delaying
 
 Admittedly, they do that so that the dithering algorithms can get more accurate colors. See for instance https://github.com/FastLED/FastLED/issues/1206
 
-However, with my application and the reset gap loss, this is a killer.
+However, with my application and the stream-reset gap loss, this is a killer.
 
 I will just make it a rule that when using my FPGA, one must use delay() not FastLED.delay() and the delay must be tuned to avoid a problem.
 
@@ -48,7 +50,7 @@ I will just make it a rule that when using my FPGA, one must use delay() not Fas
 
 My first attempt will operate just slightly inside that fastest spec RBGW rate at 34,091 32-bit LED colors per second, to give a little margin for clock error. Not that I calculated what the max clock error might be; I might need to slow it a little more to make it reliable.
 
-I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long and they don't continuously send (see the reset gap discussion above).
+I plan to have a two-port FIFO in between the input and output; maybe this would allow it to work with other controllers that send the RGB data closer to the maximum rate if the LED string is not too long and they don't continuously send (see the stream-reset gap discussion above).
 
 ![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_scaled.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
