@@ -51,7 +51,7 @@ module  rgb_sotp #(
     localparam WIDTH = $clog2(COUNTER_MAX + 1);
     localparam WID_MSB = WIDTH-1;
 
-    localparam bnum_valid             = 5'd31; // not used (yet)
+    localparam bnum_valid             = 5'd31; // 1 = this data word is valid
     localparam bnum_stream_reset      = 5'd30; // 1 = other bits invalid, just do stream-reset
     localparam bnum_G_first_data_bit  = 5'd23; // most significant bit highest; order G-R-B
     localparam bnum_G_last_data_bit   = 5'd16; // most significant bit highest; order G-R-B
@@ -120,7 +120,9 @@ module  rgb_sotp #(
                 end // STATE1_WAIT_FIFO
                 STATE1_GET_FIFO_DAT: begin
                     out_rd_fifo_en <= 1'b0;
-                    if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
+                    if (1'b0 == in_rd_fifo_data[bnum_valid]) begin
+                        state1 <= STATE1_WAIT_FIFO; // invalid data - ignore
+                    end else if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
                         outserial_count <= RGBW_STR_RST;
                         outbit_count <= 4'd15; // code for stream_reset
                         state1 <= STATE1_OUT_LAST;
@@ -170,7 +172,7 @@ module  rgb_sotp #(
                 end // STATE1_OUT_BLUE
                 STATE1_OUT_LAST: begin // wait for blue to go then do white
                     if (4'd0 == outbit_count) begin
-                        state1 <= STATE1_GET_FIFO_DAT;
+                        state1 <= STATE1_WAIT_FIFO;
                     end
                 end // STATE1_OUT_LAST
                 default: state1 <= STATE1_WAIT_FIFO; // Go to wait_fifo if in unknown state
@@ -189,62 +191,65 @@ module  rgb_sotp #(
                 STATE2_WAIT_START: begin
                     if (4'd15 == outbit_count) begin // stream_reset
                         out_sig <= 1'b0;
-                        outserial_count = RGBW_STR_RST;
+                        outserial_count <= RGBW_STR_RST;
+                        state2 <= STATE2_OUT_STRM_RST;
                     end else if (4'd0 != outbit_count) begin
                         out_sig <= 1'b1;
-                        outbit_count = outbit_count - 5'd1;
+                        outbit_count <= outbit_count - 5'd1;
                         if (1'b0 == fifo_dat_red[outbit_count-1]) begin
-                            outserial_count = RGBW_T0H;
+                            outserial_count <= RGBW_T0H-13'd1;
                             state2 <= STATE2_SEND_T0H;
                         end else begin
-                            outserial_count = RGBW_T1H;
+                            outserial_count <= RGBW_T1H-13'd1;
                             state2 <= STATE2_SEND_T1H;
                         end
                     end
                 end // STATE2_WAIT_START
                 STATE2_SEND_T0H: begin
-                    if (5'd0 != outserial_count) outserial_count = outserial_count - 1;
+                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
                     else begin
-                        outserial_count = RGBW_T0L;
+                        out_sig <= 1'b0;
+                        outserial_count <= RGBW_T0L-13'd1;
                         state2 <= STATE2_SEND_T0L;
                     end
                 end // STATE2_SEND_T0H
                 STATE2_SEND_T0L: begin
-                    if (5'd0 != outserial_count) outserial_count = outserial_count - 1;
+                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
                     else begin
-                        if (4'd0 == outbit_count) state2 <= STATE1_GET_FIFO_DAT;
+                        if (4'd0 == outbit_count) state2 <= STATE2_WAIT_START;
                         else begin
                             out_sig <= 1'b1;
-                            outbit_count = outbit_count - 5'd1;
+                            outbit_count <= outbit_count - 5'd1;
                             if (1'b0 == fifo_dat_red[outbit_count-1]) begin
-                                outserial_count = RGBW_T0H;
+                                outserial_count <= RGBW_T0H-13'd1;
                                 state2 <= STATE2_SEND_T0H;
                             end else begin
-                                outserial_count = RGBW_T1H;
+                                outserial_count <= RGBW_T1H-13'd1;
                                 state2 <= STATE2_SEND_T1H;
                             end
                         end
                     end
                 end // STATE2_SEND_T0L
                 STATE2_SEND_T1H: begin
-                    if (5'd0 != outserial_count) outserial_count = outserial_count - 1;
+                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
                     else begin
-                        outserial_count = RGBW_T1L;
+                        out_sig <= 1'b0;
+                        outserial_count <= RGBW_T1L-13'd1;
                         state2 <= STATE2_SEND_T1L;
                     end
                 end // STATE2_SEND_T1H
                 STATE2_SEND_T1L: begin
-                    if (5'd0 != outserial_count) outserial_count = outserial_count - 1;
+                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
                     else begin
-                        if (4'd0 == outbit_count) state2 <= STATE1_GET_FIFO_DAT;
+                        if (4'd0 == outbit_count) state2 <= STATE2_WAIT_START;
                         else begin
                             out_sig <= 1'b1;
-                            outbit_count = outbit_count - 5'd1;
+                            outbit_count <= outbit_count - 5'd1;
                             if (1'b0 == fifo_dat_red[outbit_count-1]) begin
-                                outserial_count = RGBW_T1H;
-                                state2 <= STATE2_SEND_T1H;
+                                outserial_count <= RGBW_T0H-13'd1;
+                                state2 <= STATE2_SEND_T0H;
                             end else begin
-                                outserial_count = RGBW_T1H;
+                                outserial_count <= RGBW_T1H-13'd1;
                                 state2 <= STATE2_SEND_T1H;
                             end
                         end
@@ -254,8 +259,8 @@ module  rgb_sotp #(
                     out_sig <= 1'b0;
                     if (5'd0 != outserial_count) outserial_count <= outserial_count - 5'd1;
                     else begin
-                        outbit_count = 5'd0;
-                        state2 <= STATE1_GET_FIFO_DAT;
+                        outbit_count <= 5'd0;
+                        state2 <= STATE2_WAIT_START;
                     end 
                 end // STATE2_OUT_STRM_RST
                 default: state2 <= STATE2_WAIT_START; // Go to wait_start if in unknown state
