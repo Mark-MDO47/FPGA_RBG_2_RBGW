@@ -191,7 +191,7 @@ module  rgb_sotp #(
                 STATE2_WAIT_START: begin
                     if (4'd15 == outbit_count) begin // stream_reset
                         out_sig <= 1'b0;
-                        outserial_count <= RGBW_STR_RST;
+                        outserial_count <= RGBW_STR_RST - 13'd1;
                         state2 <= STATE2_OUT_STRM_RST;
                     end else if (4'd0 != outbit_count) begin
                         out_sig <= 1'b1;
@@ -206,7 +206,7 @@ module  rgb_sotp #(
                     end
                 end // STATE2_WAIT_START
                 STATE2_SEND_T0H: begin
-                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
+                    if (13'd0 != outserial_count) outserial_count <= outserial_count - 13'd1;
                     else begin
                         out_sig <= 1'b0;
                         outserial_count <= RGBW_T0L-13'd1;
@@ -214,7 +214,7 @@ module  rgb_sotp #(
                     end
                 end // STATE2_SEND_T0H
                 STATE2_SEND_T0L: begin
-                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
+                    if (13'd0 != outserial_count) outserial_count <= outserial_count - 13'd1;
                     else begin
                         if (4'd0 == outbit_count) state2 <= STATE2_WAIT_START;
                         else begin
@@ -231,7 +231,7 @@ module  rgb_sotp #(
                     end
                 end // STATE2_SEND_T0L
                 STATE2_SEND_T1H: begin
-                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
+                    if (13'd0 != outserial_count) outserial_count <= outserial_count - 13'd1;
                     else begin
                         out_sig <= 1'b0;
                         outserial_count <= RGBW_T1L-13'd1;
@@ -239,7 +239,7 @@ module  rgb_sotp #(
                     end
                 end // STATE2_SEND_T1H
                 STATE2_SEND_T1L: begin
-                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 1;
+                    if (13'd0 != outserial_count) outserial_count <= outserial_count - 13'd1;
                     else begin
                         if (4'd0 == outbit_count) state2 <= STATE2_WAIT_START;
                         else begin
@@ -257,9 +257,10 @@ module  rgb_sotp #(
                 end // STATE2_SEND_T1L
                 STATE2_OUT_STRM_RST: begin // 80 microseconds of LOW
                     out_sig <= 1'b0;
-                    if (5'd0 != outserial_count) outserial_count <= outserial_count - 5'd1;
+                    if (13'd1 != outserial_count) outserial_count <= outserial_count - 13'd1;
                     else begin
                         outbit_count <= 5'd0;
+                        outserial_count <= 13'd0;
                         state2 <= STATE2_WAIT_START;
                     end 
                 end // STATE2_OUT_STRM_RST

@@ -72,20 +72,30 @@ module rgb_sotp_tb();
         // wait some time after reset then do various inputs
         #100
 
-        rgb_word = 32'hC0112233;
+        rgb_word = 32'd0;
         rd_fifo_empty = 1'b0;
         #2
-        rd_fifo_empty = 1'b1;
+        rgb_word = 32'hC0112233;
         #2
+        rd_fifo_empty = 1'b1;
         rgb_word = 32'd0;
         #48
-        rgb_word = 32'h80112233;
         rd_fifo_empty = 1'b0;
         #2
-        rd_fifo_empty = 1'b1;
+        rgb_word = 32'h80112233;
         #2
         rgb_word = 32'd0;
+        rd_fifo_empty = 1'b1;
+
+        #30
+        rd_fifo_empty = 1'b0;
+        #2
+        rgb_word = 32'h80AA55CC;
+        #260
+        rgb_word = 32'd0;
+        rd_fifo_empty = 1'b1;
         
+
 /*
         for (i = 0; i < 3; i = i + 1) begin
             #2
