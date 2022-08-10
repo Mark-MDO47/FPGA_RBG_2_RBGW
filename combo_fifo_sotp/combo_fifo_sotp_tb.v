@@ -53,45 +53,46 @@ module combo_fifo_sotp_tb();
         r_clk <= ~r_clk;
         w_clk <= ~w_clk;
     end
+
+    // Instantiate FIFO
+    async_fifo #(
+        .DATA_SIZE(DATA_SIZE),
+        .ADDR_SIZE(ADDR_SIZE)
+    ) fifo (
+        .w_data(w_data),    //fifo in/out
+        .w_en(w_en),        //fifo in/out
+        .w_clk(w_clk),      //fifo in/out
+        .w_rst(w_rst),      //fifo in/out
+        .r_en(r_en),        //fifo in/out
+        .r_clk(r_clk),      //fifo in/out
+        .r_rst(r_rst),      //fifo in/out
+        .w_full(w_full),    //fifo in/out
+        .r_data(r_data),    //fifo in/out
+        .r_empty(r_empty)   //fifo in/out
+    );
+
+    // Instantiate RGB Serial Bits Input to LED Word module (uses some wait time)
+    rgb_sotp #( 
+        .RGBW_T0H(RGBW_T0H),            // num of clocks to use output - see SK6812RGBW spec
+        .RGBW_T0L(RGBW_T0L),            // num of clocks to use output - see SK6812RGBW spec
+        .RGBW_T1H(RGBW_T1H),            // num of clocks to use output - see SK6812RGBW spec
+        .RGBW_T1L(RGBW_T1L),            // num of clocks to use output - see SK6812RGBW spec
+        .RGBW_STR_RST(RGBW_STR_RST),    // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
+        .COUNTER_MAX(COUNTER_MAX)       // a little extra room in the counter (makes no difference in bit width)
+    ) sotp (
+        // inputs
+        .clk(r_clk),                // sotp input
+        .rst(rgb_rst),              // sotp input
+        .in_rd_fifo_empty(r_empty), // sotp input
+        .in_rd_fifo_data(r_data),   // sotp input
+        // outputs
+        .out_rd_fifo_en(r_en),      // sotp output
+        .out_sig(rgbw_out_serial)   // sotp output
+    );
     
     // Test control: pulse reset and create some RGB bits and timeouts
     initial begin
     
-        // Instantiate FIFO
-        async_fifo #(
-            .DATA_SIZE(DATA_SIZE),
-            .ADDR_SIZE(ADDR_SIZE)
-        ) fifo (
-            .w_data(w_data),    //fifo in/out
-            .w_en(w_en),        //fifo in/out
-            .w_clk(w_clk),      //fifo in/out
-            .w_rst(w_rst),      //fifo in/out
-            .r_en(r_en),        //fifo in/out
-            .r_clk(r_clk),      //fifo in/out
-            .r_rst(r_rst),      //fifo in/out
-            .w_full(w_full),    //fifo in/out
-            .r_data(r_data),    //fifo in/out
-            .r_empty(r_empty)   //fifo in/out
-        );
-
-        // Instantiate RGB Serial Bits Input to LED Word module (uses some wait time)
-        rgb_sotp #( 
-            .RGBW_T0H(RGBW_T0H),            // num of clocks to use output - see SK6812RGBW spec
-            .RGBW_T0L(RGBW_T0L),            // num of clocks to use output - see SK6812RGBW spec
-            .RGBW_T1H(RGBW_T1H),            // num of clocks to use output - see SK6812RGBW spec
-            .RGBW_T1L(RGBW_T1L),            // num of clocks to use output - see SK6812RGBW spec
-            .RGBW_STR_RST(RGBW_STR_RST),    // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
-            .COUNTER_MAX(COUNTER_MAX)       // a little extra room in the counter (makes no difference in bit width)
-        ) sotp (
-            // inputs
-            .clk(r_clk),                // sotp input
-            .rst(rgb_rst),              // sotp input
-            .in_rd_fifo_empty(r_empty), // sotp input
-            .in_rd_fifo_data(r_data),   // sotp input
-            // outputs
-            .out_rd_fifo_en(r_en),      // sotp output
-            .out_sig(rgbw_out_serial)   // sotp output
-        );
 
         // Pulse reset
         #10
@@ -105,4 +106,24 @@ module combo_fifo_sotp_tb();
         
         // wait some time after reset then do various inputs
         #100
+        rgb_rst <= 1'b0;
+
+    end
+
+        // Run simulation
+    initial begin
+    
+        // Create simulation output file 
+        $dumpfile("combo_fifo_sotp_tb.vcd");
+        $dumpvars(0, combo_fifo_sotp_tb);
+        
+        // Wait for given amount of time for simulation to complete
+        #(DURATION)
+        
+        // Notify and end simulation
+        $display("Finished!");
+        $finish;
+    end
+
+endmodule
         
