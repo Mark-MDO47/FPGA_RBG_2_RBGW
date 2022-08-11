@@ -108,6 +108,15 @@ module combo_fifo_sotp_tb();
         #100
         rgb_rst <= 1'b0;
 
+        // Write some data to the FIFO
+        for (i = 0; i < 4; i = i + 1) begin
+            #2
+            w_data = (i+1)*16 * 32'h00010203 + 32'h80000000;
+            w_en = 1'b1;
+            #2
+            w_en = 1'b0;
+        end
+
     end
 
         // Run simulation

@@ -63,14 +63,15 @@ module  rgb_sotp #(
 
     // state machine one (supervisor) gets data from FIFO and feeds state machine 2 (serial output)
     localparam STATE1_WAIT_FIFO      = 4'd0;
-    localparam STATE1_GET_FIFO_DAT   = 4'd1;
-    localparam STATE1_CNVRT_DAT_1    = 4'd2;
-    localparam STATE1_CNVRT_DAT_2    = 4'd3;
-    localparam STATE1_CNVRT_DAT_3    = 4'd4;
-    localparam STATE1_OUT_RED        = 4'd5; // output order is R/G/B/W
-    localparam STATE1_OUT_GREEN      = 4'd6;
-    localparam STATE1_OUT_BLUE       = 4'd7;
-    localparam STATE1_OUT_LAST       = 4'd8;
+    localparam STATE1_GET_FIFO_DAT1  = 4'd1;
+    localparam STATE1_GET_FIFO_DAT2  = 4'd2;
+    localparam STATE1_CNVRT_DAT_1    = 4'd3;
+    localparam STATE1_CNVRT_DAT_2    = 4'd4;
+    localparam STATE1_CNVRT_DAT_3    = 4'd5;
+    localparam STATE1_OUT_RED        = 4'd6; // output order is R/G/B/W
+    localparam STATE1_OUT_GREEN      = 4'd7;
+    localparam STATE1_OUT_BLUE       = 4'd8;
+    localparam STATE1_OUT_LAST       = 4'd9;
 
     // state machine 2 (serial output) outputs a byte 1 bit at a time or does stream-reset
     localparam STATE2_WAIT_START    = 3'd0;
@@ -87,7 +88,7 @@ module  rgb_sotp #(
     reg [1:0]       rstff = 2'b00;                  // to debounce rst
 
     // State Machine 1 storage - Executive
-    reg [3:0]       state1 = STATE1_GET_FIFO_DAT;
+    reg [3:0]       state1 = STATE1_WAIT_FIFO;
     // reg [7:0]       fifo_dat_status = 8'b0;
     reg [7:0]       fifo_dat_red = 8'b0;        // holds red then other colors
     reg [7:0]       fifo_dat_green = 8'b0;
@@ -109,17 +110,24 @@ module  rgb_sotp #(
 
         if (rstff[1] == 1'b1) begin // Reset processing
             out_rd_fifo_en <= 1'b0;
+            fifo_dat_red <= 8'b0;
+            fifo_dat_green <= 8'b0;
+            fifo_dat_blue <= 8'b0;
+            calc_min_color <= 8'b0;
             state1 <= STATE1_WAIT_FIFO;
         end else begin
             case (state1)
                 STATE1_WAIT_FIFO: begin
                     if (1'b0 == in_rd_fifo_empty) begin
                         out_rd_fifo_en <= 1'b1;
-                        state1 <= STATE1_GET_FIFO_DAT;
+                        state1 <= STATE1_GET_FIFO_DAT1;
                     end // if FIFO not empty
                 end // STATE1_WAIT_FIFO
-                STATE1_GET_FIFO_DAT: begin
+                STATE1_GET_FIFO_DAT1: begin
                     out_rd_fifo_en <= 1'b0;
+                    state1 <= STATE1_GET_FIFO_DAT2;
+                end // case STATE1_GET_FIFO_DAT1
+                STATE1_GET_FIFO_DAT2: begin
                     if (1'b0 == in_rd_fifo_data[bnum_valid]) begin
                         state1 <= STATE1_WAIT_FIFO; // invalid data - ignore
                     end else if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
@@ -130,47 +138,47 @@ module  rgb_sotp #(
                         fifo_dat_red   <= in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit];
                         fifo_dat_green <= in_rd_fifo_data[bnum_G_first_data_bit:bnum_G_last_data_bit];
                         fifo_dat_blue  <= in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit];
-                        calc_min_color <= in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit];
+                        if (in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit] > in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit]) begin
+                            calc_min_color <= in_rd_fifo_data[bnum_B_first_data_bit:bnum_B_last_data_bit];
+                        end else begin
+                            calc_min_color <= in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit];
+                        end
                         state1 <= STATE1_CNVRT_DAT_1;
                     end
-                end // case STATE1_GET_FIFO_DAT
+                end // case STATE1_GET_FIFO_DAT2
                 STATE1_CNVRT_DAT_1: begin
-                    if (calc_min_color > fifo_dat_red) calc_min_color <= fifo_dat_red;
+                    if (calc_min_color > fifo_dat_green) calc_min_color <= fifo_dat_green;
                     state1 <= STATE1_CNVRT_DAT_2;
                 end // STATE1_CNVRT_DAT_1
                 STATE1_CNVRT_DAT_2: begin
-                    if (calc_min_color > fifo_dat_green) calc_min_color <= fifo_dat_green;
-                    state1 <= STATE1_CNVRT_DAT_3;
-                end // STATE1_CNVRT_DAT_2
-                STATE1_CNVRT_DAT_3: begin
                     fifo_dat_red   <= fifo_dat_red - calc_min_color; // use red storage for out
                     fifo_dat_green <= fifo_dat_green - calc_min_color;
                     fifo_dat_blue  <= fifo_dat_blue - calc_min_color;
                     outbit_count <= 4'd8;
                     state1 <= STATE1_OUT_RED;
-                end // STATE1_CNVRT_DAT_3
-                STATE1_OUT_RED: begin // wait for red to go then do green
+                end // STATE1_CNVRT_DAT_2
+                STATE1_OUT_RED: begin // wait for red to go then load up green
                     if (4'd0 == outbit_count) begin
                         fifo_dat_red <= fifo_dat_green;
                         outbit_count <= 4'd8;
                         state1 <= STATE1_OUT_GREEN;
                     end
                 end // STATE1_OUT_RED
-                STATE1_OUT_GREEN: begin // wait for green to go then do blue
+                STATE1_OUT_GREEN: begin // wait for green to go then load up blue
                     if (4'd0 == outbit_count) begin
                         fifo_dat_red <= fifo_dat_blue;
                         outbit_count <= 4'd8;
                         state1 <= STATE1_OUT_BLUE;
                     end
                 end // STATE1_OUT_GREEN
-                STATE1_OUT_BLUE: begin // wait for blue to go then do white
+                STATE1_OUT_BLUE: begin // wait for blue to go then load up white
                     if (4'd0 == outbit_count) begin
                         fifo_dat_red <= calc_min_color;
                         outbit_count <= 4'd8;
                         state1 <= STATE1_OUT_LAST; // white is the last color
                     end
                 end // STATE1_OUT_BLUE
-                STATE1_OUT_LAST: begin // wait for blue to go then do white
+                STATE1_OUT_LAST: begin // wait for blue to go then do white or stream_reset
                     if (4'd0 == outbit_count) begin
                         state1 <= STATE1_WAIT_FIFO;
                     end
