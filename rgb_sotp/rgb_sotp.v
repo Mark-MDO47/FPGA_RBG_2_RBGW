@@ -22,6 +22,10 @@
 //                      0               0           bit with value "0" detected
 //                      0               1           bit with value "1" detected
 //
+// Each 32-bit output should take 90 clocks, but due to delay in reading FIFO and finding min val
+//     we consume 92 clocks (2 extra clocks).
+// It would take some head scratching to recapture those two clocks but it seems possible. We would
+//     just need to back-up the state1 move to STATE1_WAIT_FIFO by two clocks in T#L (outserial_count).
 
 // RGBW Serial Output logic
 module  rgb_sotp #(
@@ -89,7 +93,7 @@ module  rgb_sotp #(
 
     // State Machine 1 storage - Executive
     reg [3:0]       state1 = STATE1_WAIT_FIFO;
-    // reg [7:0]       fifo_dat_status = 8'b0;
+    // reg [7:0]       fifo_dat_status = 8'b0;  // don't need to save the status
     reg [7:0]       fifo_dat_red = 8'b0;        // holds red then other colors
     reg [7:0]       fifo_dat_green = 8'b0;
     reg [7:0]       fifo_dat_blue = 8'b0;
