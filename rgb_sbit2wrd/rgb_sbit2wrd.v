@@ -52,6 +52,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
     reg [4:0]       bcount = bnum_first_data_bit;   // which bit is next: 0 thru 23 (bnum_last_data_bit)
     reg             saw_in_strobe = 1'b0;              // set to one when detect in_strobe high; zero when low again
     reg             wait_for_stream_reset = 1'b0;   // wr_fifo_ovflw -> no fifo wr till stream reset (resync)
+    reg             out_data_stretch = 1'b0;        // to stretch data past the strobe
 
     // Logic
     always @ (posedge clk) begin
@@ -62,13 +63,16 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
         if (rstff[1] == 1'b1) begin // Reset processing
             out_word    <= 32'd0;
             out_strobe  <= 1'b0;
+            out_data_stretch = 1'b0;
             out_wr_fifo_overflow <= 1'b0;
             wait_for_stream_reset <= 1'b0;
             saw_in_strobe  <= 1'b0;
             bcount      <= bnum_first_data_bit;
         end else begin // else non-reset processing
-            if (out_strobe == 1'b1) begin
+            if ((out_strobe == 1'b1) && (out_data_stretch == 1'b1)) begin
                 out_strobe <= 1'b0;
+            end else if ((out_strobe == 1'b0) && (out_data_stretch == 1'b1)) begin
+                out_data_stretch <= 1'b0;
                 out_word[bnum_valid] <= 1'b0;
                 out_word[bnum_stream_reset] <= 1'b0;
                 bcount <= bnum_first_data_bit;
@@ -86,6 +90,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                     end else begin // there is now room in FIFO and an output
                         if ((1'b0 == wait_for_stream_reset) || ((1'b1 == wait_for_stream_reset) && (1'b1 == in_stream_reset))) begin
                             out_strobe <= 1'b1;
+                            out_data_stretch <= 1'b1;
                             out_word[bnum_valid] <= 1'b1;
                             wait_for_stream_reset = 1'b0;
                         end // regular or resync out_strobe
