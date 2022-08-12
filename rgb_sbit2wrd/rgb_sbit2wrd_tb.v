@@ -19,10 +19,11 @@ module rgb_sbit2wrd_tb();
     reg             rgb_sbit_strobe = 1'b0;         // input rgb_sbit_strobe to rgb_sbit2wrd
     reg             rgb_sbit_value = 1'b0;          // when rgb_sbit_strobe, and if (rgb_sbit_stream_reset == 0), bit value of 0 or 1
     reg             rgb_sbit_stream_reset = 1'b0;   // when rgb_sbit_strobe, if 1 then "stream reset" (50 microsec stable value)
-    reg             rgb_wr_fifo_full = 1'b0;               // when 1, rgb_sbit2wrd cannot strobe a word
+    reg             rgb_wr_fifo_full = 1'b0;        // when 1, rgb_sbit2wrd cannot strobe a word
 
     reg             bit_first  = 1'b1;
     reg             bit_second = 1'b0;
+    reg  [5:0]      where_am_i = 6'd0;
 
     // Variables
     integer                     i = 0;
@@ -66,6 +67,7 @@ module rgb_sbit2wrd_tb();
         
         // wait some time after reset then do various inputs
         #100
+        where_am_i = 6'd1;
         
         // see effects of different rgb_sbit_strobe lengths - one clock rgb_sbit_strobe
         rgb_sbit_strobe = 1'b1;
@@ -105,6 +107,7 @@ module rgb_sbit2wrd_tb();
 
         // see effects of rgb_sbit_stream_reset - two clocks rgb_sbit_strobe
         #2
+        where_am_i = 6'd2;
         rgb_sbit_strobe = 1'b1;
         rgb_sbit_value = 1'b1;
         rgb_sbit_stream_reset = 1'b1;
@@ -116,97 +119,77 @@ module rgb_sbit2wrd_tb();
         // pass some bits through the serial-to-parallel code - two clocks rgb_sbit_strobe
         for (j = 0; j < 4; j = j + 1) begin
             if (3 == j) rgb_wr_fifo_full = 1'b1;
-            for (i = 0; i < 12; i = i + 1) begin
+            for (i = 0; i < 24; i = i + 1) begin  // 24 bits RGB data
                 #2
+                where_am_i = where_am_i + 6'd1;
                 rgb_sbit_strobe = 1'b1;
-                rgb_sbit_strobe = bit_first;
+                rgb_sbit_value = bit_first;
                 rgb_sbit_stream_reset = 1'b0;
                 #4
                 rgb_sbit_strobe = 1'b0;
-                rgb_sbit_strobe = 1'b0;
+                rgb_sbit_value = 1'b0;
                 rgb_sbit_stream_reset = 1'b0;
-                #2
-                rgb_sbit_strobe = 1'b1;
-                rgb_sbit_strobe = bit_second;
-                rgb_sbit_stream_reset = 1'b0;
-                #4
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_stream_reset = 1'b0;
-                #2
-                rgb_sbit_strobe = 1'b1;
-                rgb_sbit_strobe = bit_first;
-                rgb_sbit_stream_reset = 1'b0;
-                #8
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_stream_reset = 1'b0;
-                #2
-                rgb_sbit_strobe = 1'b1;
-                rgb_sbit_strobe = bit_second;
-                rgb_sbit_stream_reset = 1'b0;
-                #8
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_strobe = 1'b0;
-                rgb_sbit_stream_reset = 1'b0;
-            end // i-loop
-            bit_first = ~bit_first;
-            bit_second = ~bit_second;
+            end
             rgb_wr_fifo_full = 1'b0;
         end // j-loop
         
         // put stream reset with no bits in counter - two clocks rgb_sbit_strobe
         #2
+        where_am_i = where_am_i + 6'd1;
         rgb_sbit_strobe = 1'b1;
-        rgb_sbit_strobe = bit_first;
+        rgb_sbit_value = bit_first;
         rgb_sbit_stream_reset = 1'b1;
         #4
         rgb_sbit_strobe = 1'b0;
-        rgb_sbit_strobe = 1'b0;
+        rgb_sbit_value = 1'b0;
         rgb_sbit_stream_reset = 1'b0;
         
         // put stream reset with one bit in counter - two clocks rgb_sbit_strobe
         #2
+        where_am_i = where_am_i + 6'd1;
         rgb_sbit_strobe = 1'b1;
-        rgb_sbit_strobe = bit_second;
+        rgb_sbit_value = bit_second;
         rgb_sbit_stream_reset = 1'b0;
         #4
         rgb_sbit_strobe = 1'b0;
-        rgb_sbit_strobe = 1'b0;
+        rgb_sbit_value = 1'b0;
         rgb_sbit_stream_reset = 1'b0;
         #2
         rgb_sbit_strobe = 1'b1;
-        rgb_sbit_strobe = 1'b1;
+        rgb_sbit_value = 1'b1;
         rgb_sbit_stream_reset = 1'b1;
         #4
         rgb_sbit_strobe = 1'b0;
-        rgb_sbit_strobe = 1'b0;
+        rgb_sbit_value = 1'b0;
         rgb_sbit_stream_reset = 1'b0;
 
         // put stream reset with 23 bits in counter - two clocks rgb_sbit_strobe
+        where_am_i = where_am_i + 6'd1;
         for (i = 0; i < 23; i = i + 1) begin
             #2
             rgb_sbit_strobe = 1'b1;
-            rgb_sbit_strobe = bit_first;
+            rgb_sbit_value = bit_first;
             rgb_sbit_stream_reset = 1'b0;
             #4
             rgb_sbit_strobe = 1'b0;
-            rgb_sbit_strobe = 1'b0;
+            rgb_sbit_value = 1'b0;
             rgb_sbit_stream_reset = 1'b0;
             bit_first = ~bit_first;
         end // i-loop
         #2
         rgb_sbit_strobe = 1'b1;
-        rgb_sbit_strobe = bit_first;
+        rgb_sbit_value = bit_first;
         rgb_sbit_stream_reset = 1'b1;
         #4
         rgb_sbit_strobe = 1'b0;
-        rgb_sbit_strobe = 1'b0;
+        rgb_sbit_value = 1'b0;
         rgb_sbit_stream_reset = 1'b0;
+        where_am_i = where_am_i + 6'd1;
         
         #100
         bit_first = ~bit_first;
-        
+        where_am_i = where_am_i + 6'd1;
+
 
 
     end // initial

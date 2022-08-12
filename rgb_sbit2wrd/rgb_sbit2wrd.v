@@ -63,7 +63,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
         if (rstff[1] == 1'b1) begin // Reset processing
             out_word    <= 32'd0;
             out_strobe  <= 1'b0;
-            out_data_stretch = 1'b0;
+            out_data_stretch <= 1'b0;
             out_wr_fifo_overflow <= 1'b0;
             wait_for_stream_reset <= 1'b0;
             saw_in_strobe  <= 1'b0;
@@ -86,13 +86,13 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                 if ((in_stream_reset == 1'b1) || (bcount == bnum_last_data_bit)) begin // time to out_strobe a word
                     if (in_wr_fifo_full == 1'b1) begin // cannot out_strobe; overflow
                         out_wr_fifo_overflow <= 1'b1; // sticky error - FIFO overflow
-                        wait_for_stream_reset = 1'b1; // resync with input stream reset
+                        wait_for_stream_reset <= 1'b1; // resync with input stream reset
                     end else begin // there is now room in FIFO and an output
                         if ((1'b0 == wait_for_stream_reset) || ((1'b1 == wait_for_stream_reset) && (1'b1 == in_stream_reset))) begin
                             out_strobe <= 1'b1;
                             out_data_stretch <= 1'b1; 
                             out_word[bnum_valid] <= 1'b1;
-                            wait_for_stream_reset = 1'b0;
+                            wait_for_stream_reset <= 1'b0;
                         end // regular or resync out_strobe
                     end // we want to out_strobe
                     bcount <= bnum_first_data_bit;
