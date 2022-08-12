@@ -22,10 +22,25 @@
 //                      0               0           bit with value "0" detected
 //                      0               1           bit with value "1" detected
 //
-// Each 32-bit output should take 90 clocks, but due to delay in reading FIFO and finding min val
-//     we consume 92 clocks (2 extra clocks).
-// It would take some head scratching to recapture those two clocks but it seems possible. We would
-//     just need to back-up the state1 move to STATE1_WAIT_FIFO by two clocks in T#L (outserial_count).
+// If data is available, the FIFO read happens about 4 clocks into (86 clocks remaining in)
+//     the output of the last serial bit of the previous FIFO data read. Thus there is plenty of time
+//     to calculate the minimum color intensity and adjust the four colors to be output before the data
+//     is needed. State machine 2 (serial output) starts the first bit of the next color byte on the
+//     same schedule it would use to go between bits within a color byte. Because the data handover was
+//     set up in advance, it just keeps going as if it were another bit in the last color byte.
+//  It takes 4 clocks from sensing when to start the FIFO read until the data is locked in registers.
+//  It takes another 4 clocks from then until state machine 2 would be able to read the new data.
+//
+// If there is a long delay in the next read-fifo not empty, this can cause a gap at the LOW signal
+//    level between LED 32-bit words.
+// If you run with a testbench that reduces the number of clocks to send a serial data word, you can
+//     reduce it so far that there is a gap at the LOW signal level between LED 32-bit words.
+//
+//  STATE1_OUT_LAST completes after either STATE2_SEND_T1H or STATE2_SEND_T0H has started. At this point
+//     state machine 2 will complete sending the HIGH and the LOW for this bit without looking at any
+//     communication from state machine 1. State machine 1 then checks the FIFO and when data is available
+//     reads it, transforms it to RBGW, and communicates to state machine 2 that the next color bytes is
+//     available.
 
 // RGBW Serial Output logic
 module  rgb_sotp #(

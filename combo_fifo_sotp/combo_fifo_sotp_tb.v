@@ -13,12 +13,23 @@ module combo_fifo_sotp_tb();
     localparam  ADDR_SIZE = 8;
 
     // Settings sotp - timing is faster for quicker test bench and easier checking
+    /* for high-speed testing
     localparam RGBW_T0H = 2;        // num of clocks to use output - see SK6812RGBW spec
     localparam RGBW_T0L = 6;        // num of clocks to use output - see SK6812RGBW spec
     localparam RGBW_T1H = 4;        // num of clocks to use output - see SK6812RGBW spec
     localparam RGBW_T1L = 4;        // num of clocks to use output - see SK6812RGBW spec
     localparam RGBW_STR_RST = 20;   // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
     localparam COUNTER_MAX = 7800;  // use realistic size counter
+    */
+    
+    // for realistic speed testing
+    localparam RGBW_T0H = 16;        // num of clocks to use output - see SK6812RGBW spec
+    localparam RGBW_T0L = 74;        // num of clocks to use output - see SK6812RGBW spec
+    localparam RGBW_T1H = 45;        // num of clocks to use output - see SK6812RGBW spec
+    localparam RGBW_T1L = 45;        // num of clocks to use output - see SK6812RGBW spec
+    localparam RGBW_STR_RST = 7681;  // ~= 80 microsec with 96 MHz clock (PLL from 12 MHz)
+    localparam COUNTER_MAX = 7800;   // a little extra room in the counter (makes no difference in bit width)
+
 
     // Internal signals
     wire                        r_en;
