@@ -90,7 +90,7 @@ module  rgb_sbit2wrd /* #( // Parameters ) */
                     end else begin // there is now room in FIFO and an output
                         if ((1'b0 == wait_for_stream_reset) || ((1'b1 == wait_for_stream_reset) && (1'b1 == in_stream_reset))) begin
                             out_strobe <= 1'b1;
-                            out_data_stretch <= 1'b1;
+                            out_data_stretch <= 1'b1; 
                             out_word[bnum_valid] <= 1'b1;
                             wait_for_stream_reset = 1'b0;
                         end // regular or resync out_strobe
