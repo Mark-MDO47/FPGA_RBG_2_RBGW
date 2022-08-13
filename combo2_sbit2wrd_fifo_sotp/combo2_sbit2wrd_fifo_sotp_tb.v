@@ -1,12 +1,12 @@
-// Testbench for rgb_sbit2wrd
-// Mark Olson 2022-08-09
+// Testbench combo2_tb
+// Mark Olson 2022-08-12
 //
 
 // Define timescale - approx 48 MHz but we will treat as if 96 MHz
 `timescale 10 ns / 1 ps
 
 // Define our testbench
-module combo_fifo_sotp_tb();
+module combo2_tb();
 
     // Settings FIFO
     localparam  DATA_SIZE = 32;
@@ -32,28 +32,39 @@ module combo_fifo_sotp_tb();
 
 
     // Internal signals
-    wire                        r_en;
-    wire    [DATA_SIZE-1:0]     r_data;
-    wire                        r_empty;
-    wire                        w_full;
+    wire                    r_en;
+    wire    [DATA_SIZE-1:0] r_data;
+    wire                    r_empty;
+    wire                    w_full;
+    wire                    w_en;
+    wire    [DATA_SIZE-1:0] w_data;
+    wire                    rgb_wr_fifo_overflow;
+
+    // Internal storage elements sbit2wrd
+    reg                     rgb_sbit_strobe = 1'b0;         // input rgb_sbit_strobe to rgb_sbit2wrd
+    reg                     rgb_sbit_value = 1'b0;          // when rgb_sbit_strobe, and if (rgb_sbit_stream_reset == 0), bit value of 0 or 1
+    reg                     rgb_sbit_stream_reset = 1'b0;   // when rgb_sbit_strobe, if 1 then "stream reset" (50 microsec stable value)
+    reg                     sbit_rst = 1'b0;
 
     // Internal storage elements sotp
-    reg                         rgb_rst = 1'b0;
-    wire                        rgbw_out_serial;
-    // reg                         r_clk = 0; use FIFO clock
+    reg                     rgb_rst = 1'b0;
+    wire                    rgbw_out_serial;
+    // reg                     r_clk = 0; use FIFO clock
 
     // Internal storage elements FIFO
-    reg                         r_clk = 0;
-    reg                         r_rst = 0;
-    reg     [DATA_SIZE-1:0]     w_data = 32'd0;
-    reg                         w_en = 0;
-    reg                         w_clk = 0;
-    reg                         w_rst = 0;
-    
+    reg                     r_clk = 0;
+    reg                     r_rst = 0;
+    reg                     w_clk = 0;
+    reg                     w_rst = 0;
+
+    // testing/debugging
+    reg                     bit_first  = 1'b1;
+    reg  [5:0]              where_am_i = 6'd0;
+
 
     // Variables
-    integer                     i = 0;
-    integer                     j = 0;
+    integer                 i = 0;
+    integer                 j = 0;
 
     // Simulation time: 25000 * 1 us = 25 ms
     localparam DURATION = 25000;
@@ -80,6 +91,21 @@ module combo_fifo_sotp_tb();
         .w_full(w_full),    //fifo in/out
         .r_data(r_data),    //fifo in/out
         .r_empty(r_empty)   //fifo in/out
+    );
+
+    // Instantiate RGB Serial Bits Input to LED Word module (uses some wait time)
+    rgb_sbit2wrd /* #( ) */ uut (
+        // inputs
+        .clk(w_clk),
+        .rst(sbit_rst),
+        .in_strobe(rgb_sbit_strobe),
+        .in_sbit_value(rgb_sbit_value),
+        .in_stream_reset(rgb_sbit_stream_reset),
+        .in_wr_fifo_full(w_full),
+        // outputs
+        .out_word(w_data),
+        .out_strobe(w_en),
+        .out_wr_fifo_overflow(rgb_wr_fifo_overflow)
     );
 
     // Instantiate RGB Serial Bits Input to LED Word module (uses some wait time)
@@ -110,32 +136,51 @@ module combo_fifo_sotp_tb();
         r_rst <= 1'b1;
         w_rst <= 1'b1;
         rgb_rst <= 1'b1;
+        sbit_rst <= 1'b1;
         #50
         r_rst <= 1'b0;
         w_rst <= 1'b0;
         rgb_rst <= 1'b0;
+        sbit_rst <= 1'b0;
         
         // wait some time after reset then do various inputs
         #100
         rgb_rst <= 1'b0;
 
-        // Write some data to the FIFO
-        for (i = 0; i < 4; i = i + 1) begin
-            #2
-            w_data = (i+1)*16 * 32'h00010203 + 32'h80000000;
-            w_en = 1'b1;
-            #2
-            w_en = 1'b0;
-        end
-
+        // pass some bits through the serial-to-parallel code - two clocks rgb_sbit_strobe
+        for (j = 0; j < 4; j = j + 1) begin
+            for (i = 0; i < 12; i = i + 1) begin  // 24 bits RGB data
+                #2
+                where_am_i = where_am_i + 6'd1;
+                rgb_sbit_strobe = 1'b1;
+                rgb_sbit_value = bit_first;
+                rgb_sbit_stream_reset = 1'b0;
+                #4
+                rgb_sbit_strobe = 1'b0;
+                rgb_sbit_value = 1'b0;
+                rgb_sbit_stream_reset = 1'b0;
+                #2
+                where_am_i = where_am_i + 6'd1;
+                rgb_sbit_strobe = 1'b1;
+                rgb_sbit_value = ~bit_first;
+                rgb_sbit_stream_reset = 1'b0;
+                #4
+                rgb_sbit_strobe = 1'b0;
+                rgb_sbit_value = 1'b0;
+                rgb_sbit_stream_reset = 1'b0;
+            end
+            #12
+            bit_first = ~bit_first;
+        end // j-loop
+        
     end
 
         // Run simulation
     initial begin
     
         // Create simulation output file 
-        $dumpfile("combo_fifo_sotp_tb.vcd");
-        $dumpvars(0, combo_fifo_sotp_tb);
+        $dumpfile("combo2_tb.vcd");
+        $dumpvars(0, combo2_tb);
         
         // Wait for given amount of time for simulation to complete
         #(DURATION)
