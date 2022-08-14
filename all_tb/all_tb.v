@@ -81,6 +81,9 @@ module all_tb();
     // testing/debugging
     reg                     bit_first  = 1'b1;
     reg  [5:0]              where_am_i = 6'd0;
+    reg [31:0]              file_data = 32'd0; //register declaration for storing each line of infile "a_hex.txt'
+    reg  [5:0]              numbit = 6'd0; // bit number for file_data
+    integer                 infile; // file handle of input file
 
 
     // Variables
@@ -182,56 +185,38 @@ module all_tb();
         so_rst <= 1'b0;
         s2wd_rst <= 1'b0;
         
-        // wait some time after reset then do min-min & max-min 1 bit
+        // wait some time after reset then do data
         #100
-        // min-min 1 bit
-        si_inp_serial = 1;
-        #T1H_min
-        si_inp_serial = 0;
-        #T1L_min
-        // max-min 1 bit
-        si_inp_serial = 1;
-        #T1H_max
-        si_inp_serial = 0;
-        #T1L_min
-
-        // now do min-min & max-min 0 bit
-        // min-min 0 bit
-        si_inp_serial = 1;
-        #T0H_min
-        si_inp_serial = 0;
-        #T0L_min
-        // max-min 0 bit
-        si_inp_serial = 1;
-        #T0H_max
-        si_inp_serial = 0;
-        #T0L_min
         
-        // now do a "stream reset" with LOW
-        si_inp_serial = 0;
-        #RGB_rst
+        infile = $fopen("D:/GitHub-Mark-MDO47/FPGA_RBG_2_RBGW/all_tb/infile_hex.txt", "r");
+        while (! $feof(infile)) begin //read until an "end of file" is reached.
+            $fscanf(infile,"%h\n",file_data); //scan each line and get the value as an hexadecimal
+            where_am_i <= where_am_i + 6'd1;
+            if (file_data <= 32'h00FFFFFF) begin
+                for (numbit = 6'd23; numbit >= 6'd0; numbit = numbit - 6'd1) begin
+                    if (file_data[numbit] != 32'd0) begin // send a 1 bit
+                        // send min-min 1 bit in serial form
+                        si_inp_serial <= 1'b1;
+                        #T1H_min
+                        si_inp_serial <= 1'b0;
+                        #T1L_min
+                    end else begin // send a 0 bit
+                        // send max-min 0 bit in serial form
+                        si_inp_serial <= 1'b1;
+                        #T0H_max
+                        si_inp_serial <= 1'b0;
+                        #T0L_min
+                    end
+                end // loop through all 24 bits of data in infile line
+            end else begin // send a stream_reset
+                // send stream_reset
+                si_inp_serial <= 1'b0;
+                #RGB_rst // stream_reset
+            end // send one bit in serial form
+        end // read lines in infile
+    end // initial begin for simulation
 
-        // min-min 1 bit
-        si_inp_serial = 1;
-        #T1H_min
-        si_inp_serial = 0;
-        #T1L_min
-        // max-min 0 bit
-        si_inp_serial = 1;
-        #T0H_max
-        si_inp_serial = 0;
-        #T0L_min
-
-        // now do a "stream reset" with HIGH
-        si_inp_serial = 1;
-        #RGB_rst
-        si_inp_serial = 1;
-        #T0L_min
-        si_inp_serial = 0;
-
-    end
-
-        // Run simulation
+    // Run simulation
     initial begin
     
         // Create simulation output file 
