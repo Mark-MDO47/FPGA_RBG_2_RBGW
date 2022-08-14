@@ -84,6 +84,7 @@ module all_tb();
     reg [31:0]              file_data = 32'd0; //register declaration for storing each line of infile "a_hex.txt'
     reg  [5:0]              numbit = 6'd0; // bit number for file_data
     integer                 infile; // file handle of input file
+    integer                 tmp;    // shouldn't need to do this
 
 
     // Variables
@@ -190,7 +191,9 @@ module all_tb();
         
         infile = $fopen("D:/GitHub-Mark-MDO47/FPGA_RBG_2_RBGW/all_tb/infile_hex.txt", "r");
         while (! $feof(infile)) begin //read until an "end of file" is reached.
-            $fscanf(infile,"%h\n",file_data); //scan each line and get the value as an hexadecimal
+            // shouldn't need to assign $fscanf result to tmp to make compiler happy but...
+            // otherwise get "$fscanf() is a system function, it cannot be called as a task."
+            tmp = $fscanf(infile,"%h\n",file_data); //scan each line and get the value as an hexadecimal
             where_am_i <= where_am_i + 6'd1;
             if (file_data <= 32'h00FFFFFF) begin
                 for (numbit = 6'd23; numbit >= 6'd0; numbit = numbit - 6'd1) begin
@@ -200,18 +203,21 @@ module all_tb();
                         #T1H_min
                         si_inp_serial <= 1'b0;
                         #T1L_min
+                        si_inp_serial <= 1'b0; // cannot have # wait just prior to "end" or get syntax error
                     end else begin // send a 0 bit
                         // send max-min 0 bit in serial form
                         si_inp_serial <= 1'b1;
                         #T0H_max
                         si_inp_serial <= 1'b0;
                         #T0L_min
+                        si_inp_serial <= 1'b0; // cannot have # wait just prior to "end" or get syntax error
                     end
                 end // loop through all 24 bits of data in infile line
             end else begin // send a stream_reset
                 // send stream_reset
                 si_inp_serial <= 1'b0;
                 #RGB_rst // stream_reset
+                si_inp_serial <= 1'b0; // cannot have # wait just prior to "end" or get syntax error
             end // send one bit in serial form
         end // read lines in infile
     end // initial begin for simulation
