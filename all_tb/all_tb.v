@@ -196,7 +196,7 @@ module all_tb();
             tmp = $fscanf(infile,"%h\n",file_data); //scan each line and get the value as an hexadecimal
             where_am_i <= where_am_i + 6'd1;
             if (file_data <= 32'h00FFFFFF) begin
-                for (numbit = 6'd23; numbit >= 6'd0; numbit = numbit - 6'd1) begin
+                for (numbit = 6'd23; (numbit >= 6'd0) & (numbit <= 6'd23); numbit = numbit - 6'd1) begin
                     if (file_data[numbit] != 32'd0) begin // send a 1 bit
                         // send min-min 1 bit in serial form
                         si_inp_serial <= 1'b1;
