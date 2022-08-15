@@ -125,7 +125,7 @@ module all_tb();
         .rst(s2wd_rst),
         .in_strobe(si_2_s2wd_strobe),
         .in_sbit_value(si_2_s2wd_value),
-        .in_stream_reset(s2wd_stream_reset),
+        .in_stream_reset(si_2_s2wd_stream_reset),
         .in_wr_fifo_full(w_full),
         // outputs
         .out_word(w_data),
