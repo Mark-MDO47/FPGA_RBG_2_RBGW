@@ -91,8 +91,8 @@ module all_tb();
     integer                 i = 0;
     integer                 j = 0;
 
-    // Simulation time: 25000 * 1 us = 25 ms
-    localparam DURATION = 50000;
+    // Simulation time in clocks
+    localparam DURATION = 70000;
 
     // Generate clock signal (not really correlated with time; we are compressing time)
     always begin
