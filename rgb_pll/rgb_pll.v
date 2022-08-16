@@ -16,7 +16,7 @@
 
    FILTER_RANGE: 1 (3'b001)   
 */                         
-module pll_test (          
+module rgb_pll (          
                            
     // Inputs              
     input   ref_clk,       
