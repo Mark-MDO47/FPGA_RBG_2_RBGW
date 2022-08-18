@@ -1,0 +1,18 @@
+# real_deal pcf https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW
+# Lattice iCEstick https://www.latticesemi.com/products/developmentboardsandkits/icestick
+
+set_io      ref_clk     21 # 12 Mhz ref clk
+
+# PMOD I/O
+set_io              clk_96          87  # on PMOD connector pin 07
+set_io              locked          89  # on PMOD connector pin 05
+set_io  -pullup yes pmod_01_rst_h   78
+set_io  -pullup yes pmod_02_inprgb  79
+set_io  -pullup yes pmod_03_otprgbw 80
+
+# LEDs
+set_io              led_red[0]  99
+set_io              led_red[1]  98
+set_io              led_red[2]  97
+set_io              led_red[3]  96
+set_io              led_green   95
