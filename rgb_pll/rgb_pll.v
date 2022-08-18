@@ -22,7 +22,7 @@ module rgb_pll (
     input   ref_clk,       
                            
     // outputs             
-    output  clk,           
+    output  clk_96,           
     output  locked         
 );                         
                            
@@ -36,7 +36,7 @@ module rgb_pll (
         .FILTER_RANGE(3'B001)       // filter range (ditto)
     ) pll (                
         .REFERENCECLK(ref_clk),     // input clock
-        .PLLOUTCORE(clk),           // output clock
+        .PLLOUTCORE(clk_96),        // output clock
         .LOCK(locked),              // locked signal
         .RESETB(1'b1),              // active low reset; set to run always
         .BYPASS(1'b0)               // no bypass, use PLL signal as output
