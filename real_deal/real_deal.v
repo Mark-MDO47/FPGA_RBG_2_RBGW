@@ -3,34 +3,35 @@
 //
 
 // Define our "main"
-module real_deal()
+module real_deal(
     // Inputs              
-    input   ref_clk,       
-    input   clk_96,           
-    input   locked,
-    input   pmod_01_rst_h,
-    input   pmod_02_inprgb,
+    input               ref_clk,       
+    input               pmod_01_rst_h,
+    input               pmod_02_inprgb,
                            
     // outputs       
-    output  pmod_03_otprgbw,
-    output  led_red[3:0],
-    output  led_green
-):
+    output  reg         pmod_03_otprgbw,
+    output  reg         pmod_04_ffovflw,
+    output  reg         pmod_07_clk_96,           
+    output  reg         pmod_08_locked,
+    output  reg [3:0]   led_red,
+    output  reg         led_green
+);
 
     // Settings for sinp - RGB serial input
     localparam SINP_COUNTER_MAX = 5000;     // a little extra room in the counter (makes no difference in bit width)
     localparam STREAM_RESET_CLKS = 4800;    // ~= 50 microsec with 96 MHz clock (PLL from 12 MHz)
     localparam SAMPLE_TIME_CLKS   = 57;     // place to sample to see if zero bit or one bit
     // rgb_sinp will need inputs that use this many half-clocks
-    localparam T0H_min = 48;
-    localparam T0H_max = 105;
-    localparam T1H_min = 124;
-    localparam T1H_max = 182;
-    localparam T1L_min = 57;
-    localparam T1L_max = 115;
-    localparam T0L_min = 134;
-    localparam T0L_max = 192;
-    localparam RGB_rst = 9600;
+    // localparam T0H_min = 48;
+    // localparam T0H_max = 105;
+    // localparam T1H_min = 124;
+    // localparam T1H_max = 182;
+    // localparam T1L_min = 57;
+    // localparam T1L_max = 115;
+    // localparam T0L_min = 134;
+    // localparam T0L_max = 192;
+    // localparam RGB_rst = (2*STREAM_RESET_CLKS);
 
     // Settings for FIFO
     localparam  DATA_SIZE = 32;
@@ -53,8 +54,12 @@ module real_deal()
     wire                    w_en;
     wire    [DATA_SIZE-1:0] w_data;
     wire                    s2wd_wr_fifo_overflow;
+    wire                    so_out_serial;
+    wire                    pll_clk_96;
+    wire                    pll_locked;
 
     // Internal storage elements sinp
+    reg [1:0]               rstff = 2'b00;          // to debounce pmod_01_rst_h
     reg                     si_rst = 1'b0;
     wire                    si_2_s2wd_strobe;       // output to rgb_sbit2wrd
     wire                    si_2_s2wd_stream_reset; // when si_2_s2wd_strobe, if 1 then "stream reset" (50 microsec stable value)
@@ -71,27 +76,16 @@ module real_deal()
     // Internal storage elements sotp
     reg                     so_rst = 1'b0;
 
-    // testing/debugging
-    reg                     bit_first  = 1'b1;
-    reg  [5:0]              where_am_i = 6'd0;
-    reg [31:0]              file_data = 32'd0; //register declaration for storing each line of infile "a_hex.txt'
-    reg  [5:0]              numbit = 6'd0; // bit number for file_data
-    integer                 infile; // file handle of input file
-    integer                 tmp;    // shouldn't need to do this
+    always @ (posedge pll_clk_96) begin
+        pmod_03_otprgbw <= so_out_serial;
+    end
 
-
-    // Variables
-    integer                 i = 0;
-    integer                 j = 0;
-
-    // Simulation time in clocks
-    localparam DURATION = 70000;
 
     // Instantiate RGB PLL module
     rgb_pll pll (
         .ref_clk(ref_clk),
-        .clk_96(clk_96),
-        .locked(locked)
+        .clk_96(pll_clk_96),
+        .locked(pll_locked)
     );
     
     // Instantiate RGB Serial Input module
@@ -100,7 +94,7 @@ module real_deal()
         .STREAM_RESET_CLKS(STREAM_RESET_CLKS),  // for "stream reset"
         .SAMPLE_TIME_CLKS(SAMPLE_TIME_CLKS)     // sample time for 1 or 0 bit
     ) sinp (
-        .clk(clk_96),
+        .clk(pll_clk_96),
         .rst(si_rst),
         .sig(pmod_02_inprgb),
         .strobe(si_2_s2wd_strobe),
@@ -111,7 +105,7 @@ module real_deal()
     // Instantiate RGB Serial Bits Input to LED Word module
     rgb_sbit2wrd /* #( ) */ sbit2wrd (
         // inputs
-        .clk(clk_96),
+        .clk(pll_clk_96),
         .rst(s2wd_rst),
         .in_strobe(si_2_s2wd_strobe),
         .in_sbit_value(si_2_s2wd_value),
@@ -128,16 +122,16 @@ module real_deal()
         .DATA_SIZE(DATA_SIZE),
         .ADDR_SIZE(ADDR_SIZE)
     ) fifo (
-        .w_data(w_data),    //fifo in/out
-        .w_en(w_en),        //fifo in/out
-        .w_clk(clk_96),      //fifo in/out
-        .w_rst(w_rst),      //fifo in/out
-        .r_en(r_en),        //fifo in/out
-        .r_clk(clk_96),      //fifo in/out
-        .r_rst(r_rst),      //fifo in/out
-        .w_full(w_full),    //fifo in/out
-        .r_data(r_data),    //fifo in/out
-        .r_empty(r_empty)   //fifo in/out
+        .w_data(w_data),
+        .w_en(w_en),
+        .w_clk(pll_clk_96),
+        .w_rst(w_rst),
+        .r_en(r_en),
+        .r_clk(pll_clk_96),
+        .r_rst(r_rst),
+        .w_full(w_full),
+        .r_data(r_data),
+        .r_empty(r_empty)
     );
 
     // Instantiate Serial Bits Output to RGBW LED Word module
@@ -150,13 +144,13 @@ module real_deal()
         .COUNTER_MAX(SOTP_COUNTER_MAX)  // a little extra room in the counter (makes no difference in bit width)
     ) sotp (
         // inputs
-        .clk(clk_96),              // sotp input
-        .rst(so_rst),              // sotp input
+        .clk(pll_clk_96),           // sotp input
+        .rst(so_rst),               // sotp input
         .in_rd_fifo_empty(r_empty), // sotp input
         .in_rd_fifo_data(r_data),   // sotp input
         // outputs
         .out_rd_fifo_en(r_en),      // sotp output
-        .out_sig(pmod_03_otprgbw)   // sotp output
+        .out_sig(so_out_serial)     // sotp output
     );
     
 
