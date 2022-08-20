@@ -78,6 +78,12 @@ module real_deal(
 
     always @ (posedge pll_clk_96) begin
         pmod_03_otprgbw <= so_out_serial;
+        pmod_04_ffovflw <= 1'b0;
+        pmod_07_clk_96 <= 1'b0;          
+        pmod_08_locked <= 1'b0;
+        led_red <= 4'b0;
+        led_green <= 1'b1;
+
     end
 
 
