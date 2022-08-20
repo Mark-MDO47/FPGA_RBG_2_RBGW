@@ -59,22 +59,20 @@ module real_deal(
     wire                    pll_locked;
 
     // Internal storage elements sinp
-    reg [1:0]               rstff = 2'b00;          // to debounce pmod_01_rst_h
-    reg                     si_rst = 1'b0;
     wire                    si_2_s2wd_strobe;       // output to rgb_sbit2wrd
     wire                    si_2_s2wd_stream_reset; // when si_2_s2wd_strobe, if 1 then "stream reset" (50 microsec stable value)
     wire                    si_2_s2wd_value;        // when si_2_s2wd_strobe, and if (si_2_s2wd_value == 0), bit value of 0 or 1
     
     // Internal storage elements sbit2wrd
-    reg                     s2wd_rst = 1'b0;
+    // none
 
     // Internal storage elements FIFO
-    reg                     r_rst = 1'b0;
-    reg                     w_clk = 1'b0;
-    reg                     w_rst = 1'b0;
+    // none
 
     // Internal storage elements sotp
-    reg                     so_rst = 1'b0;
+    // none
+
+
 
     always @ (posedge pll_clk_96) begin
         pmod_03_otprgbw <= so_out_serial;
@@ -83,7 +81,6 @@ module real_deal(
         pmod_08_locked <= 1'b0;
         led_red <= 4'b0;
         led_green <= 1'b1;
-
     end
 
 
@@ -101,7 +98,7 @@ module real_deal(
         .SAMPLE_TIME_CLKS(SAMPLE_TIME_CLKS)     // sample time for 1 or 0 bit
     ) sinp (
         .clk(pll_clk_96),
-        .rst(si_rst),
+        .rst(pmod_01_rst_h),
         .sig(pmod_02_inprgb),
         .strobe(si_2_s2wd_strobe),
         .sbit_value(si_2_s2wd_value),
@@ -112,7 +109,7 @@ module real_deal(
     rgb_sbit2wrd /* #( ) */ sbit2wrd (
         // inputs
         .clk(pll_clk_96),
-        .rst(s2wd_rst),
+        .rst(pmod_01_rst_h),
         .in_strobe(si_2_s2wd_strobe),
         .in_sbit_value(si_2_s2wd_value),
         .in_stream_reset(si_2_s2wd_stream_reset),
@@ -131,10 +128,10 @@ module real_deal(
         .w_data(w_data),
         .w_en(w_en),
         .w_clk(pll_clk_96),
-        .w_rst(w_rst),
+        .w_rst(pmod_01_rst_h),
         .r_en(r_en),
         .r_clk(pll_clk_96),
-        .r_rst(r_rst),
+        .r_rst(pmod_01_rst_h),
         .w_full(w_full),
         .r_data(r_data),
         .r_empty(r_empty)
@@ -150,13 +147,13 @@ module real_deal(
         .COUNTER_MAX(SOTP_COUNTER_MAX)  // a little extra room in the counter (makes no difference in bit width)
     ) sotp (
         // inputs
-        .clk(pll_clk_96),           // sotp input
-        .rst(so_rst),               // sotp input
-        .in_rd_fifo_empty(r_empty), // sotp input
-        .in_rd_fifo_data(r_data),   // sotp input
+        .clk(pll_clk_96),
+        .rst(pmod_01_rst_h),
+        .in_rd_fifo_empty(r_empty),
+        .in_rd_fifo_data(r_data),
         // outputs
-        .out_rd_fifo_en(r_en),      // sotp output
-        .out_sig(so_out_serial)     // sotp output
+        .out_rd_fifo_en(r_en),
+        .out_sig(so_out_serial)
     );
     
 
