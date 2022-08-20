@@ -4,11 +4,12 @@
 set_io      ref_clk     21 # 12 Mhz ref clk
 
 # PMOD I/O
-set_io              clk_96          87  # on PMOD connector pin 07
-set_io              locked          89  # on PMOD connector pin 05
 set_io  -pullup yes pmod_01_rst_h   78
 set_io  -pullup yes pmod_02_inprgb  79
-set_io  -pullup yes pmod_03_otprgbw 80
+set_io              pmod_03_otprgbw 80
+set_io              pmod_04_ffovflw 81
+set_io              pmod_07_clk_96  87
+set_io              pmod_08_locked  88
 
 # LEDs
 set_io              led_red[0]  99
