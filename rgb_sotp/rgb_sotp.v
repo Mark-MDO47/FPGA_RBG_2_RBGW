@@ -203,7 +203,7 @@ module  rgb_sotp #(
                     end
                 end // STATE1_OUT_LAST
                 default: state1 <= STATE1_WAIT_FIFO; // Go to wait_fifo if in unknown state
-			endcase // on state1
+            endcase // on state1
         end // non-reset processing for state machine 1
     end // always for state machine 1
 
@@ -292,7 +292,7 @@ module  rgb_sotp #(
                     end 
                 end // STATE2_OUT_STRM_RST
                 default: state2 <= STATE2_WAIT_START; // Go to wait_start if in unknown state
-			endcase // on state2
+            endcase // on state2
         end // non-reset processing for state machine 2
     end // always for state machine 2
     
