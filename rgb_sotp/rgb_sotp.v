@@ -136,13 +136,13 @@ module  rgb_sotp #(
             fifo_dat_green <= 8'b0;
             fifo_dat_blue <= 8'b0;
             calc_min_color <= 8'b0;
-            s1_outbit_count <= 4'd0;
             s1_outbit_count_en = 1'd0;
+            s1_outbit_count <= 4'd0;
             state1 <= STATE1_WAIT_FIFO;
         end else begin
             if (1'b1 == s2_outbit_count_rcvd) begin
-                s1_outbit_count_en = 1'd0; // clear it if received
                 s1_outbit_count <= 4'd0;
+                s1_outbit_count_en = 1'd0; // clear it if received
             end
             case (state1)
                 STATE1_WAIT_FIFO: begin
@@ -160,6 +160,7 @@ module  rgb_sotp #(
                         state1 <= STATE1_WAIT_FIFO; // invalid data - ignore
                     end else if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
                         s1_outbit_count <= 4'd15; // code for stream_reset
+                        s1_outbit_count_en = 1'd1;
                         state1 <= STATE1_OUT_LAST;
                     end else begin
                         fifo_dat_red   <= in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit];
@@ -182,31 +183,35 @@ module  rgb_sotp #(
                     fifo_dat_green <= fifo_dat_green - calc_min_color;
                     fifo_dat_blue  <= fifo_dat_blue - calc_min_color;
                     s1_outbit_count <= 4'd8;
+                    s1_outbit_count_en = 1'd1;
                     state1 <= STATE1_OUT_RED;
                 end // STATE1_CNVRT_DAT_2
                 STATE1_OUT_RED: begin // wait for red to go then load up green
-                    if (4'd0 == s1_outbit_count) begin
+                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= fifo_dat_green;
                         s1_outbit_count <= 4'd8;
+                        s1_outbit_count_en = 1'd1;
                         state1 <= STATE1_OUT_GREEN;
                     end
                 end // STATE1_OUT_RED
                 STATE1_OUT_GREEN: begin // wait for green to go then load up blue
-                    if (4'd0 == s1_outbit_count) begin
+                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= fifo_dat_blue;
                         s1_outbit_count <= 4'd8;
+                        s1_outbit_count_en = 1'd1;
                         state1 <= STATE1_OUT_BLUE;
                     end
                 end // STATE1_OUT_GREEN
                 STATE1_OUT_BLUE: begin // wait for blue to go then load up white
-                    if (4'd0 == s1_outbit_count) begin
+                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= calc_min_color;
                         s1_outbit_count <= 4'd8;
+                        s1_outbit_count_en = 1'd1;
                         state1 <= STATE1_OUT_LAST; // white is the last color
                     end
                 end // STATE1_OUT_BLUE
                 STATE1_OUT_LAST: begin // wait for blue to go then do white or stream_reset
-                    if (4'd0 == s1_outbit_count) begin
+                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
                         state1 <= STATE1_WAIT_FIFO;
                     end
                 end // STATE1_OUT_LAST
