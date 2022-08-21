@@ -236,7 +236,7 @@ module  rgb_sotp #(
                         out_sig <= 1'b0;
                         outserial_count <= RGBW_STR_RST - 13'd1;
                         state2 <= STATE2_OUT_STRM_RST;
-                    end else if ((1'b1 == s1_outbit_count) && (4'd0 != s1_outbit_count)) begin
+                    end else if ((1'b1 == s1_outbit_count_en) && (4'd0 != s1_outbit_count)) begin
                         out_sig <= 1'b1;
                         s2_outbit_count <= s1_outbit_count - 5'd1;
                         s2_outbit_count_rcvd <= 1'b1;
