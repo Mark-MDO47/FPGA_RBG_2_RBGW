@@ -118,9 +118,10 @@ module  rgb_sotp #(
     reg [3:0]       state2 = STATE2_WAIT_START;
     reg [WID_MSB:0] outserial_count = 13'd0;
     reg [3:0]       s1_outbit_count = 4'd0;
-    reg             s1_outbit_count_en = 1'd0;
+    reg             s1_datasend_en = 1'd0;
     reg [3:0]       s2_outbit_count = 4'd0;
-    reg             s2_outbit_count_rcvd = 1'd0;
+    reg             s2_datasend_rcvd = 1'd0;
+    reg [7:0]       s2_dat2send = 8'b0;
 
     // reg          debug = 0;
     
@@ -136,13 +137,13 @@ module  rgb_sotp #(
             fifo_dat_green <= 8'b0;
             fifo_dat_blue <= 8'b0;
             calc_min_color <= 8'b0;
-            s1_outbit_count_en = 1'd0;
+            s1_datasend_en = 1'd0;
             s1_outbit_count <= 4'd0;
             state1 <= STATE1_WAIT_FIFO;
         end else begin
-            if (1'b1 == s2_outbit_count_rcvd) begin
+            if (1'b1 == s2_datasend_rcvd) begin
                 s1_outbit_count <= 4'd0;
-                s1_outbit_count_en = 1'd0; // clear it if received
+                s1_datasend_en = 1'd0; // clear it if received
             end
             case (state1)
                 STATE1_WAIT_FIFO: begin
@@ -160,7 +161,7 @@ module  rgb_sotp #(
                         state1 <= STATE1_WAIT_FIFO; // invalid data - ignore
                     end else if (1'b1 == in_rd_fifo_data[bnum_stream_reset]) begin
                         s1_outbit_count <= 4'd15; // code for stream_reset
-                        s1_outbit_count_en = 1'd1;
+                        s1_datasend_en = 1'd1;
                         state1 <= STATE1_OUT_LAST;
                     end else begin
                         fifo_dat_red   <= in_rd_fifo_data[bnum_R_first_data_bit:bnum_R_last_data_bit];
@@ -183,35 +184,35 @@ module  rgb_sotp #(
                     fifo_dat_green <= fifo_dat_green - calc_min_color;
                     fifo_dat_blue  <= fifo_dat_blue - calc_min_color;
                     s1_outbit_count <= 4'd8;
-                    s1_outbit_count_en = 1'd1;
+                    s1_datasend_en = 1'd1;
                     state1 <= STATE1_OUT_RED;
                 end // STATE1_CNVRT_DAT_2
                 STATE1_OUT_RED: begin // wait for red to go then load up green
-                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
+                    if ((1'b0 == s1_datasend_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= fifo_dat_green;
                         s1_outbit_count <= 4'd8;
-                        s1_outbit_count_en = 1'd1;
+                        s1_datasend_en = 1'd1;
                         state1 <= STATE1_OUT_GREEN;
                     end
                 end // STATE1_OUT_RED
                 STATE1_OUT_GREEN: begin // wait for green to go then load up blue
-                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
+                    if ((1'b0 == s1_datasend_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= fifo_dat_blue;
                         s1_outbit_count <= 4'd8;
-                        s1_outbit_count_en = 1'd1;
+                        s1_datasend_en = 1'd1;
                         state1 <= STATE1_OUT_BLUE;
                     end
                 end // STATE1_OUT_GREEN
                 STATE1_OUT_BLUE: begin // wait for blue to go then load up white
-                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
+                    if ((1'b0 == s1_datasend_en) && (4'd0 == s2_outbit_count)) begin
                         fifo_dat_red <= calc_min_color;
                         s1_outbit_count <= 4'd8;
-                        s1_outbit_count_en = 1'd1;
+                        s1_datasend_en = 1'd1;
                         state1 <= STATE1_OUT_LAST; // white is the last color
                     end
                 end // STATE1_OUT_BLUE
                 STATE1_OUT_LAST: begin // wait for blue to go then do white or stream_reset
-                    if ((1'b0 == s1_outbit_count_en) && (4'd0 == s2_outbit_count)) begin
+                    if ((1'b0 == s1_datasend_en) && (4'd0 == s2_outbit_count)) begin
                         state1 <= STATE1_WAIT_FIFO;
                     end
                 end // STATE1_OUT_LAST
@@ -229,18 +230,19 @@ module  rgb_sotp #(
         end else begin
             case (state2)
                 STATE2_WAIT_START: begin
-                    if ((1'b1 == s1_outbit_count_en) && (4'd15 == s1_outbit_count)) begin // stream_reset
+                    if ((1'b1 == s1_datasend_en) && (4'd15 == s1_outbit_count)) begin // stream_reset
                         outserial_count <= RGBW_STR_RST;
                         s2_outbit_count <= s1_outbit_count;
-                        s2_outbit_count_rcvd <= 1'b1;
+                        s2_dat2send <= fifo_dat_red; // this is where the data gets placed
+                        s2_datasend_rcvd <= 1'b1;
                         out_sig <= 1'b0;
                         outserial_count <= RGBW_STR_RST - 13'd1;
                         state2 <= STATE2_OUT_STRM_RST;
-                    end else if ((1'b1 == s1_outbit_count_en) && (4'd0 != s1_outbit_count)) begin
+                    end else if ((1'b1 == s1_datasend_en) && (4'd0 != s1_outbit_count)) begin
                         out_sig <= 1'b1;
                         s2_outbit_count <= s1_outbit_count - 5'd1;
-                        s2_outbit_count_rcvd <= 1'b1;
-                        if (1'b0 == fifo_dat_red[s2_outbit_count-1]) begin
+                        s2_datasend_rcvd <= 1'b1;
+                        if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
                             outserial_count <= RGBW_T0H-13'd1;
                             state2 <= STATE2_SEND_T0H;
                         end else begin
@@ -248,7 +250,7 @@ module  rgb_sotp #(
                             state2 <= STATE2_SEND_T1H;
                         end
                     end else begin
-                        s2_outbit_count_rcvd <= 1'b0;
+                        s2_datasend_rcvd <= 1'b0;
                     end
                 end // STATE2_WAIT_START
                 STATE2_SEND_T0H: begin
@@ -266,7 +268,7 @@ module  rgb_sotp #(
                         else begin
                             out_sig <= 1'b1;
                             s2_outbit_count <= s2_outbit_count - 5'd1;
-                            if (1'b0 == fifo_dat_red[s2_outbit_count-1]) begin
+                            if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
                                 outserial_count <= RGBW_T0H-13'd1;
                                 state2 <= STATE2_SEND_T0H;
                             end else begin
@@ -291,7 +293,7 @@ module  rgb_sotp #(
                         else begin
                             out_sig <= 1'b1;
                             s2_outbit_count <= s2_outbit_count - 5'd1;
-                            if (1'b0 == fifo_dat_red[s2_outbit_count-1]) begin
+                            if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
                                 outserial_count <= RGBW_T0H-13'd1;
                                 state2 <= STATE2_SEND_T0H;
                             end else begin
