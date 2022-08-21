@@ -52,8 +52,8 @@ module rgb_pll (
                            
     // Instantiate PLL (   12 MHz in, 96 MHz out) for iCE_STICK
     SB_PLL40_CORE #(       
-        .FEEDBACK_PATH("   SIMPLE"),// don't use fine delay adjustment
-        .PLLOUT_SELECT("   GENCLK"),// no phase shift on output
+        .FEEDBACK_PATH("SIMPLE"),// don't use fine delay adjustment
+        .PLLOUT_SELECT("GENCLK"),// no phase shift on output
         .DIVR(4'B0000),             // reference clock divider (from icepll tool)
         .DIVF(7'b0111111),          // feedback clock divider (ditto)
         .DIVQ(3'B011),              // VCO clock divider (ditto)
