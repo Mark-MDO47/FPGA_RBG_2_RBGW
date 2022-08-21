@@ -226,14 +226,16 @@ module  rgb_sotp #(
             out_sig <= 1'b0;
             outserial_count <= 13'd0;
             s2_outbit_count <= 4'd0;
+            s2_datasend_rcvd <= 1'b0;
             state2 <= STATE2_WAIT_START;
         end else begin
+            if (1'b0 == s1_datasend_en) s2_datasend_rcvd <= 1'b0;;
             case (state2)
                 STATE2_WAIT_START: begin
                     if ((1'b1 == s1_datasend_en) && (4'd15 == s1_outbit_count)) begin // stream_reset
                         outserial_count <= RGBW_STR_RST;
                         s2_outbit_count <= s1_outbit_count;
-                        s2_dat2send <= fifo_dat_red; // this is where the data gets placed
+                        s2_dat2send <= 8'b0; // stream_reset - not real data
                         s2_datasend_rcvd <= 1'b1;
                         out_sig <= 1'b0;
                         outserial_count <= RGBW_STR_RST - 13'd1;
@@ -241,8 +243,9 @@ module  rgb_sotp #(
                     end else if ((1'b1 == s1_datasend_en) && (4'd0 != s1_outbit_count)) begin
                         out_sig <= 1'b1;
                         s2_outbit_count <= s1_outbit_count - 5'd1;
+                        s2_dat2send <= fifo_dat_red; // this is where the data gets placed
                         s2_datasend_rcvd <= 1'b1;
-                        if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
+                        if (1'b0 == fifo_dat_red[s1_outbit_count - 5'd1]) begin // not yet stored in s2_dat2send nor s2_outbit_count
                             outserial_count <= RGBW_T0H-13'd1;
                             state2 <= STATE2_SEND_T0H;
                         end else begin
@@ -268,7 +271,7 @@ module  rgb_sotp #(
                         else begin
                             out_sig <= 1'b1;
                             s2_outbit_count <= s2_outbit_count - 5'd1;
-                            if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
+                            if (1'b0 == s2_dat2send[s2_outbit_count-5'd1]) begin
                                 outserial_count <= RGBW_T0H-13'd1;
                                 state2 <= STATE2_SEND_T0H;
                             end else begin
@@ -293,7 +296,7 @@ module  rgb_sotp #(
                         else begin
                             out_sig <= 1'b1;
                             s2_outbit_count <= s2_outbit_count - 5'd1;
-                            if (1'b0 == s2_dat2send[s2_outbit_count-1]) begin
+                            if (1'b0 == s2_dat2send[s2_outbit_count-5'd1]) begin
                                 outserial_count <= RGBW_T0H-13'd1;
                                 state2 <= STATE2_SEND_T0H;
                             end else begin
