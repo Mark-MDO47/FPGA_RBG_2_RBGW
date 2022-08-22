@@ -1,0 +1,80 @@
+// Reading input .asc file..
+// Reading 1k chipdb file..
+// Creating timing netlist..
+
+icetime topological timing analysis report
+==========================================
+
+Info: max_span_hack is enabled: estimate is conservative.
+
+Report for critical path:
+-------------------------
+
+        lc40_9_4_3 (LogicCell40) [clk] -> lcout: 0.640 ns
+     0.640 ns net_16966 (sinp.count[3])
+        t1897 (LocalMux) I -> O: 0.330 ns
+        inmux_9_4_19115_19184 (InMux) I -> O: 0.260 ns
+        lc40_9_4_6 (LogicCell40) in3 -> lcout: 0.316 ns
+     1.545 ns net_16969 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_CARRY_CO_I1[2])
+        odrv_9_4_16969_16864 (Odrv4) I -> O: 0.372 ns
+        t1908 (Span4Mux_h4) I -> O: 0.316 ns
+        t1907 (LocalMux) I -> O: 0.330 ns
+        inmux_9_1_18712_18750 (InMux) I -> O: 0.260 ns
+        t480 (CascadeMux) I -> O: 0.000 ns
+        lc40_9_1_2 (LogicCell40) in2 -> carryout: 0.231 ns
+     3.053 ns t439
+        lc40_9_1_3 (LogicCell40) carryin -> carryout: 0.126 ns
+     3.179 ns t440
+        lc40_9_1_4 (LogicCell40) carryin -> carryout: 0.126 ns
+     3.305 ns t441
+        lc40_9_1_5 (LogicCell40) carryin -> carryout: 0.126 ns
+     3.431 ns t442
+        lc40_9_1_6 (LogicCell40) carryin -> carryout: 0.126 ns
+     3.558 ns t443
+        lc40_9_1_7 (LogicCell40) carryin -> carryout: 0.126 ns
+     3.684 ns net_18777 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1[7])
+        t444 (ICE_CARRY_IN_MUX) carryinitin -> carryinitout: 0.196 ns
+        lc40_9_2_0 (LogicCell40) carryin -> carryout: 0.126 ns
+     4.006 ns t445
+        lc40_9_2_1 (LogicCell40) carryin -> carryout: 0.126 ns
+     4.133 ns t446
+        lc40_9_2_2 (LogicCell40) carryin -> carryout: 0.126 ns
+     4.259 ns t447
+        lc40_9_2_3 (LogicCell40) carryin -> carryout: 0.126 ns
+     4.385 ns net_18916 ($nextpnr_ICESTORM_LC_7$I3)
+        inmux_9_2_18916_18926 (InMux) I -> O: 0.260 ns
+        lc40_9_2_4 (LogicCell40) in3 -> lcout: 0.316 ns
+     4.960 ns net_16685 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1[11])
+        odrv_9_2_16685_12641 (Odrv4) I -> O: 0.372 ns
+        t1865 (LocalMux) I -> O: 0.330 ns
+        inmux_7_2_14649_14684 (InMux) I -> O: 0.260 ns
+        t387 (CascadeMux) I -> O: 0.000 ns
+        lc40_7_2_0 (LogicCell40) in2 -> lcout: 0.379 ns
+     6.300 ns net_12463 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_I0_O[1])
+        odrv_7_2_12463_14635 (Odrv4) I -> O: 0.372 ns
+        t1593 (LocalMux) I -> O: 0.330 ns
+        inmux_8_4_17005_17069 (InMux) I -> O: 0.260 ns
+        t460 (CascadeMux) I -> O: 0.000 ns
+        lc40_8_4_5 (LogicCell40) in2 -> lcout: 0.379 ns
+     7.639 ns net_14859 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_I0_O_SB_LUT4_I1_O)
+        odrv_8_4_14859_15007 (Odrv4) I -> O: 0.372 ns
+        t1763 (Span4Mux_v4) I -> O: 0.372 ns
+        t1762 (LocalMux) I -> O: 0.330 ns
+        inmux_8_3_16892_16960 (CEMux) I -> O: 0.603 ns
+     9.316 ns net_16960 (sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_I0_O_SB_LUT4_I1_O)
+        lc40_8_3_7 (LogicCell40) ce [setup]: 0.000 ns
+     9.316 ns net_14738 (sinp.count[10])
+
+Resolvable net names on path:
+     0.640 ns ..  1.229 ns sinp.count[3]
+     1.545 ns ..  2.821 ns sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_CARRY_CO_I1[2]
+     3.684 ns ..  3.880 ns sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1[7]
+     4.385 ns ..  4.645 ns $nextpnr_ICESTORM_LC_7$I3
+     4.960 ns ..  5.921 ns sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1[11]
+     6.300 ns ..  7.261 ns sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_I0_O[1]
+     7.639 ns ..  9.316 ns sinp.strobe_SB_DFFESR_Q_D_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_I0_O_SB_LUT4_I1_O
+                  lcout -> sinp.count[10]
+
+Total number of logic levels: 15
+Total path delay: 9.32 ns (107.35 MHz)
+
