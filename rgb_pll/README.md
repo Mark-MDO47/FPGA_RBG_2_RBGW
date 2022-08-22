@@ -29,7 +29,7 @@ Mods based on https://github.com/YosysHQ/yosys/issues/107
 * which leads to https://github.com/carlosgs/iceDAQ/blob/master/pll_example/pll_example.v
 
 The output PLL clock is PLLOUTCORE originally in Digi-Key tutorial on FPGAs #9
-* if generated with: $ apio raw "icepll -i 12 -o 96 -f pll.v" it will be PLLOUTCORE
+* if generated with: $ apio raw "icepll -i 12 -o 96 -f pll.v -m" it will be PLLOUTCORE
 * In the carlosgs example above, it was originally also PLLOUTCORE, then changed to PLLOUTGLOBAL
 
 Here from the iCE40 sysCLOCK PLL Design and Usage Guide:
