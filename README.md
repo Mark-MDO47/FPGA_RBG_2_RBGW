@@ -62,3 +62,8 @@ Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciF
 ## My collection of references
 
 https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/References.md
+
+## Tentative parts list
+
+https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/PartsList.md
+
