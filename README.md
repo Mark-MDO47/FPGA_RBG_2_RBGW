@@ -54,6 +54,10 @@ I plan to have a two-port FIFO in between the input and output; maybe this would
 
 ![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/Concept_FPGA_scaled.jpg "FPGA Concept for FPGA_RBT_2_RBGW")
 
+The build area for the entire FPGA load is the real_deal directory
+* https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/tree/master/real_deal
+* Timing analysis of critical path indicates timing is good!
+
 ## Oh my aching brain...
 
 Please excuse me if I get RGB and RBG mixed up; Jim and I just finished the SciFi Rubber Band Gun (RBG) that uses WS2812b LEDs. Because of this I am very used to typing RBG.
