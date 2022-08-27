@@ -35,6 +35,7 @@ module all_tb();
     localparam SAMPLE_TIME_CLKS   = 57;     // place to sample to see if zero bit or one bit
 
     // rgb_sinp will need inputs that use this many half-clocks (divide by 2 for rising edges)
+    //    in testbed we use waits (#number) that count both edges of clock to generate inputs
     localparam T0H_min = 48;
     localparam T0H_max = 105;
     localparam T1H_min = 124;
