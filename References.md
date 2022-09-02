@@ -27,3 +27,8 @@
   * HDLCON 2002 New Verilog-2001 Techniques for Creating Parmeterized Models (or Down With `define and Death of a defparam!) Rev 1.2 May 2002
     * http://www.sunburst-design.com/papers/CummingsHDLCON2002_Parameters.pdf
  
+## iCEstorm
+* https://clifford.at/icestorm
+* https://github.com/YosysHQ/icestorm
+* https://hedmen.org/icestorm-doc/icestorm.html
+* http://bygone.clairexen.net/icestorm/
