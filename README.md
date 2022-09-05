@@ -24,11 +24,19 @@ I found the code for the ESP32 that generates the bit stream and it looks like I
 
 Placing an FPGA inline to do the conversion allows me to learn about Verilog, FPGAs, apio, and a host of new material. This did seem interesting!
 * https://www.youtube.com/watch?v=lLg1AgA2Xoo&t=3s "Introduction to FPGA Part 1 - What is an FPGA? | Digi-Key Electronics"
-* https://verilogguide.readthedocs.io/en/latest/index.html - similar to above but readable, not video 
+* https://verilogguide.readthedocs.io/en/latest/index.html - similar to above but readable, not video
+
+## Tools
+
+As in the Digi-Key videos, I used the open-source Project IceStorm software to perform the verilog HDL, testbench, synthesis and timing constraint checks
+* https://clifford.at/icestorm
+
+I plan to also use the Lattice iCEcube2 software for those activites, to compare and learn more. A free node-locked license is available from Lattice Semiconductor
+* https://www.latticesemi.com/Products/DesignSoftwareAndIP/FPGAandLDS/iCEcube2
 
 ## 4 pounds of potatos in a 3 pound sack
 
-However, reading the specs of the two LED controllers I discovered that if the bitrate for the WS2812b is at the spec maximum then it will overflow the spec maximum bitrate of the SK6812 (because we need to transmit 4 bytes RGBW for every three bytes RGB we receive).
+Reading the specs of the two LED controllers I discovered that if the bitrate for the WS2812b is at the spec maximum then it will overflow the spec maximum bitrate of the SK6812 (because we need to transmit 4 bytes RGBW for every three bytes RGB we receive).
 
 Looking again at the FastLED code, it looks like the ESP32 code actually sends 3-byte words at a rate of 33,333 per second (instead of the fastest spec rate of 43,860 per second); this will fit inside the fastest spec 4-byte word rate of 34,722 per second. I still need to validate this data rate.
 
