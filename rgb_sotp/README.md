@@ -1,7 +1,6 @@
 # TestBench for RGB serial output module
 
 The RGB serial output module rgb_sotp.v reads a series of 32-bit words from the FIFO (Status/Green/Red/Blue). Status has two defined bits: valid and in_stream_reset. The stream reset is the protocol that tells the string of LEDs that we are starting over talking to LED 0 (the first one in the string).
-
 <br>
 It converts these to a stream of serial "1"s, "0"s, and "stream reset"s. The serial format used by the  SK6812 RGBW LEDs is different than that of the WS2812b RGB LEDs; for the SK6812:
 - the "0" bit is nominally 0.3 microsec high followed by 0.9 microsec low
