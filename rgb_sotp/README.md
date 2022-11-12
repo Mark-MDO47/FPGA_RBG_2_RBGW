@@ -10,13 +10,13 @@ It converts these to a stream of serial "1"s, "0"s, and "stream reset"s. The ser
 The SK6812RGBW protocol can be found in this spec:
 * https://cdn-shop.adafruit.com/product-files/2757/p2757_SK6812RGBW_REV01.pdf
 
-A higher level depiction of this output protocol (taken from the spec) in action is shown here. First is the serial head-to-tail architecture of the LEDs:
+A higher level depiction of this output protocol (taken from the spec) in action is shown here. First is the serial head-to-tail cascade architecture of the LEDs:
 
-![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/SK6812RGB_SerialProtocol_arch.png "SK6812RBGW serial head-to-tail architecture (from spec)")
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/CascadeLED_SerialProtocol_arch.png "SK6812RBGW serial cascade architecture (from spec)")
 
 Then the high-level serial output protocol as seen by each of the LEDs in the architecture diagram. Note how each LED "swallows" the first set of bytes and passes on the rest.
 
-![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/SK6812RGB_SerialProtocol.png "SK6812RBGW serial output protocol (from spec)")
+![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/SK6812RGBW_SerialProtocol.png "SK6812RBGW serial output protocol (from spec)")
 
 There are two state machines in rgb_sotp.v.
 - State Machine 1 coordinates reading from the FIFO, converting 3-bytes to 4-bytes, and buffering the data to State Machine 2
