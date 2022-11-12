@@ -10,7 +10,7 @@ It converts these to a stream of serial "1"s, "0"s, and "stream reset"s. The ser
 The SK6812RGBW protocol can be found in this spec:
 * https://cdn-shop.adafruit.com/product-files/2757/p2757_SK6812RGBW_REV01.pdf
 
-A higher level depiction of this output protocol (taken from the spec) in action is shown here First is the serial head-to-tail architecture of the LEDs:
+A higher level depiction of this output protocol (taken from the spec) in action is shown here. First is the serial head-to-tail architecture of the LEDs:
 
 ![alt text](https://github.com/Mark-MDO47/FPGA_RBG_2_RBGW/blob/master/images/SK6812RGB_SerialProtocol_arch.png "SK6812RBGW serial head-to-tail architecture (from spec)")
 
