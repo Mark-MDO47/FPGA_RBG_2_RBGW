@@ -7,7 +7,7 @@
 // We expect to use a 96 MHz clock; derived from the PLL based on our 12 MHz internal clock
 //
 // inputs:
-//     Status/Green/Red/Blue 32-bit word and place in FIFO (see bnum_* localparams)
+//     Status/Green/Red/Blue 32-bit word from FIFO (see bnum_* localparams)
 //          Status: bit7            bit6            bit5
 //                  valid           in_stream_reset
 //
