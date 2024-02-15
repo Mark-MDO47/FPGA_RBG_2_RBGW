@@ -3,6 +3,17 @@
 Lattice iCE40 Verilog FPGA convert WS2812b RGB from ESP32 to SK6812 RGBW
 
 **Table Of Contents**
+* [Top](#fpga_rbg_2_rbgw "Top")
+* [What's the big idea?](#what's-the-big-idea "What's the big idea?")
+  * [The Story](#the-story "The Story")
+  * [Tools](#tools "Tools")
+  * [4 pounds of potatos in a 3 pound sack](#4-pounds-of-potatos-in-a-3-pound-sack "4 pounds of potatos in a 3 pound sack")
+  * [... and then the rate of NOT transmitting bits](#-and-then-the-rate-of-not-transmitting-bits "... and then the rate of NOT transmitting bits")
+  * [... and FastLED.delay() continues sending while delaying](#-and-fastleddelay()-continues-sending-while-delaying "... and FastLED.delay() continues sending while delaying")
+  * [FPGA concept](#fpga-concept "FPGA concept")
+  * [Oh my aching brain...](#oh-my-aching-brain "Oh my aching brain...")
+  * [My collection of references](#my-collection-of-references "My collection of references")
+  * [Tentative parts list](#tentative-parts-list "Tentative parts list")
 
 ## What's the big idea?
 
